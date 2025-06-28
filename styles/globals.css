@@ -1,8 +1,15 @@
+/* styles/globals.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-rgb));
+:root {
+  --header-height: 4rem; /* 64px, соответствует h-16 */
+  --banner-height: 2rem; /* 32px, соответствует h-8 (когда пользователь не залогинен) */
+}
+body.guest-user {
+  --header-total-height: calc(var(--header-height) + var(--banner-height));
+}
+body.user-logged-in {
+  --header-total-height: var(--header-height);
 }

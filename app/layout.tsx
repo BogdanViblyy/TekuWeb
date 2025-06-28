@@ -21,23 +21,24 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [user, cartData] = await Promise.all([
-    getSession(),
-    getCart()
-  ]);
+  const user = await getSession();
+  const cartItems = (await getCart()).items;
   
-  const cartItems = cartData ? cartData.items : [];
-  const mainPaddingTop = user ? 'pt-16' : 'pt-24';
+  const paddingTopClass = user ? 'pt-16' : 'pt-24';
 
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-white text-black flex flex-col min-h-screen`}>
+      <body className={`${inter.className} bg-white text-black`}>
+        {/* Providers теперь снова в простом виде */}
         <Providers user={user} cart={cartItems}>
-          <Toaster position="top-center" />
-          {/* Теперь Header будет получать user как prop */}
-          <Header user={user} />
-          <main className={`${mainPaddingTop} flex-grow`}>{children}</main>
-          <Footer />
+          <div className="flex flex-col min-h-screen">
+            <Header user={user} />
+            <Toaster position="top-center" />
+            <main className={`${paddingTopClass} flex-grow`}>
+              {children}
+            </main>
+            <Footer />
+          </div>
         </Providers>
       </body>
     </html>
