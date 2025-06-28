@@ -1,0 +1,117 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model brands {
+  brand_id          Int          @id @default(autoincrement())
+  brand_name        String?      @db.VarChar(50)
+  brand_description String?      @db.Text
+  shop_items        shop_items[]
+}
+
+model categories {
+  category_id   Int          @id @default(autoincrement())
+  category_name String?      @db.VarChar(50)
+  audience      String?      @default("UNISEX") @db.VarChar(10)
+  shop_items    shop_items[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+model colors {
+  color_id   Int        @id @default(autoincrement())
+  color_name String?    @db.VarChar(50)
+  color_rgb  String?    @db.VarChar(7)
+  products   products[]
+}
+
+model materials {
+  material_id   Int          @id @default(autoincrement())
+  material_name String?      @db.VarChar(50)
+  shop_items    shop_items[]
+}
+
+model order_products {
+  id                Int      @id @default(autoincrement())
+  quantity          Int      @default(1)
+  price_at_purchase Decimal  @db.Decimal(10, 2)
+  discount_on_unit  Decimal? @db.Decimal(10, 2)
+  order_id          Int
+  products_id       Int
+  orders            orders   @relation(fields: [order_id], references: [order_id], onDelete: Cascade, onUpdate: Restrict, map: "fk_orderproducts_order")
+  products          products @relation(fields: [products_id], references: [id], onUpdate: Restrict, map: "fk_orderproducts_product")
+
+  @@unique([order_id, products_id], map: "uk_order_product")
+  @@index([order_id], map: "fk_orderproducts_order")
+  @@index([products_id], map: "fk_orderproducts_product")
+}
+
+model orders {
+  order_id       Int              @id @default(autoincrement())
+  order_code     String?          @db.VarChar(50)
+  order_time     DateTime         @default(now()) @db.DateTime(0)
+  user_id        Int?
+  order_status   String           @default("CART") @db.VarChar(20)
+  order_products order_products[]
+  users          users?           @relation(fields: [user_id], references: [user_id], onUpdate: Restrict, map: "fk_order_user")
+
+  @@index([user_id], map: "fk_order_user")
+  @@index([order_status], map: "idx_order_status")
+}
+
+model products {
+  id               Int              @id @default(autoincrement())
+  product_quantity Int              @default(0)
+  item_id          Int
+  color_id         Int
+  size_id          Int
+  order_products   order_products[]
+  colors           colors           @relation(fields: [color_id], references: [color_id], onUpdate: Restrict, map: "fk_product_color")
+  shop_items       shop_items       @relation(fields: [item_id], references: [item_id], onDelete: Cascade, onUpdate: Restrict, map: "fk_product_item")
+  sizes            sizes            @relation(fields: [size_id], references: [size_id], onUpdate: Restrict, map: "fk_product_size")
+
+  @@unique([item_id, color_id, size_id], map: "uk_product_variant")
+  @@index([color_id], map: "fk_product_color")
+  @@index([item_id], map: "fk_product_item")
+  @@index([size_id], map: "fk_product_size")
+}
+
+model shop_items {
+  item_id          Int         @id @default(autoincrement())
+  item_name        String?     @db.VarChar(255)
+  item_price       Decimal     @default(0.00) @db.Decimal(10, 2)
+  item_discount    Decimal?    @db.Decimal(10, 2)
+  item_code        String?     @db.VarChar(50)
+  item_description String?     @db.Text
+  category_id      Int?
+  brand_id         Int?
+  material_id      Int?
+  item_image       String?     @db.Text
+  products         products[]
+  brands           brands?     @relation(fields: [brand_id], references: [brand_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_brand")
+  categories       categories? @relation(fields: [category_id], references: [category_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_category")
+  materials        materials?  @relation(fields: [material_id], references: [material_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_material")
+
+  @@index([brand_id], map: "fk_shopitem_brand")
+  @@index([category_id], map: "fk_shopitem_category")
+  @@index([material_id], map: "fk_shopitem_material")
+}
+
+model sizes {
+  size_id   Int        @id @default(autoincrement())
+  size_name String?    @db.VarChar(50)
+  products  products[]
+}
+
+model users {
+  user_id       Int      @id @default(autoincrement())
+  user_name     String   @unique(map: "uk_user_name") @db.VarChar(50)
+  user_password String   @db.VarChar(255)
+  user_email    String   @unique(map: "uk_user_email") @db.VarChar(100)
+  created_at    DateTime @default(now()) @db.Timestamp(0)
+  orders        orders[]
+}

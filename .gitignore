@@ -1,0 +1,40 @@
+# Dependencies
+/node_modules
+
+# Next.js build output
+/.next/
+/out/
+
+# Prisma
+/prisma/generated/
+/prisma/migrations/*.sql
+# Если вы используете Prisma Studio в старых версиях
+# /prisma/studio/
+
+# Local environment variables
+# Эти файлы содержат секреты и не должны быть в Git
+.env.local
+.env.*.local
+.env
+# Если вы храните основной .env для примера, но не для секретов
+# то можно его не игнорировать. Но если там есть ключи - добавьте:
+# .env
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Operating System files
+.DS_Store
+Thumbs.db
