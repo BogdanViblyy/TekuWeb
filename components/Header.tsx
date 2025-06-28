@@ -1,13 +1,21 @@
 // components/Header.tsx
+'use client'; // <-- 1. Делаем компонент клиентским
+
 import Link from 'next/link';
-import { getSession } from '@/app/actions';
 import HeaderClientComponents from './HeaderClientComponents';
+import { motion } from 'framer-motion'; // <-- 2. Импортируем motion
+import { User } from '@/types';
 
-export default async function Header() {
-  const user = await getSession();
-
+// 3. Принимаем user как prop
+export default function Header({ user }: { user: User | null }) {
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 bg-white bg-opacity-95 shadow-sm backdrop-blur-md">
+    // 4. Оборачиваем header в motion.header и добавляем анимацию
+    <motion.header 
+      initial={{ y: -100, opacity: 0 }} // Начальное состояние: за пределами экрана сверху и прозрачный
+      animate={{ y: 0, opacity: 1 }}     // Финальное состояние: на своем месте и непрозрачный
+      transition={{ duration: 0.5, ease: "easeOut" }} // Параметры анимации
+      className="fixed top-0 left-0 right-0 z-30 bg-white bg-opacity-95 shadow-sm backdrop-blur-md"
+    >
       {!user && (
         <div className="bg-black text-white text-center py-2 text-sm">
           <Link href="/auth/login" className="hover:underline">
@@ -17,8 +25,6 @@ export default async function Header() {
       )}
       
       <nav aria-label="Top" className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* --- ИЗМЕНЕНИЕ ЗДЕСЬ --- */}
-        {/* Удален класс `border-b border-gray-200` с этого div */}
         <div>
           <div className="flex h-16 items-center justify-between">
             <div className="flex flex-1"></div>
@@ -34,6 +40,6 @@ export default async function Header() {
           </div>
         </div>
       </nav>
-    </header>
+    </motion.header>
   );
 }
