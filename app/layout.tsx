@@ -1,7 +1,5 @@
-// app/layout.tsx
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Toaster } from 'react-hot-toast';
 import '@/styles/globals.css';
@@ -16,25 +14,19 @@ export const metadata: Metadata = {
   description: 'Modern clothing web store built with Next.js',
 };
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function RootLayout({ children }: { children: React.ReactNode; }) {
   const user = await getSession();
   const cartItems = (await getCart()).items;
   
-  const paddingTopClass = user ? 'pt-16' : 'pt-24';
+  const bodyClass = user ? 'user-logged-in' : 'guest-user';
 
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-white text-black`}>
-        {/* Providers теперь снова в простом виде */}
+      <body className={`${inter.className} ${bodyClass} bg-white text-black`}>
         <Providers user={user} cart={cartItems}>
           <div className="flex flex-col min-h-screen">
-            <Header user={user} />
-            <Toaster position="top-center" />
-            <main className={`${paddingTopClass} flex-grow`}>
+            <Toaster />
+            <main className="flex-grow">
               {children}
             </main>
             <Footer />
