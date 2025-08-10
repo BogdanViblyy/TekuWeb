@@ -1,3 +1,4 @@
+// components/Header.tsx
 'use client';
 
 import Link from 'next/link';
@@ -44,13 +45,16 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
 
                 <nav aria-label="Top" className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-[var(--header-height)] items-center relative">
-                        {/* Центрируем логотип без transform */}
+                        {/* Центрируем логотип */}
                         <div className="absolute inset-0 flex items-center justify-center">
                             <Link href="/">
                                 <span className="sr-only">Teku</span>
                                 <div ref={ref}>
                                     <h1
+                                        id="siteLogo"
                                         className="text-4xl font-extrabold tracking-widest text-black leading-none"
+                                        // Пока интро идёт — держим логотип невидимым (без фликера на старте)
+                                        style={{ opacity: isIntroFinished ? 1 : 0 }}
                                     >
                                         TEKU
                                     </h1>
