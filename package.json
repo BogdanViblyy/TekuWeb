@@ -15,8 +15,7 @@
     "framer-motion": "^12.19.2",
     "gsap": "^3.13.0",
     "jose": "^6.0.11",
-    "jsonwebtoken": "^9.0.2",
-    "next": "14.2.3",
+    "next": "^14.2.35",
     "nookies": "^2.5.2",
     "react": "^18",
     "react-dom": "^18",
@@ -25,7 +24,6 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

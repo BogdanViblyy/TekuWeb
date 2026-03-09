@@ -46,7 +46,7 @@ export default function HomePage() {
       setUser(session);
     };
     fetchUser();
-    
+
     // Сбрасываем анимацию контента при каждой загрузке
     resetContentAnimation();
   }, []);
@@ -72,12 +72,9 @@ export default function HomePage() {
   return (
     <div className="relative min-h-screen">
       <Header user={user} isIntroFinished={isIntroFinished} />
-      
+
       {!isIntroFinished && (
-        <Intro 
-          onComplete={handleIntroComplete} 
-          user={user} 
-        />
+        <Intro />
       )}
 
       {/* Контент страницы с анимацией */}

@@ -11,10 +11,11 @@ import { getProducts } from '@/lib/data';
 import ProductCard from '@/components/ProductCard';
 import prisma from '@/lib/prisma';
 import { User, CartItem, OrderFullDetails, Product } from '@/types';
+import { jwtSecret } from '@/lib/env';
 
 
 const imagePrefix = '/images/';
-const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+const secret = jwtSecret;
 
 // --- ИСПРАВЛЕНИЕ ЗДЕСЬ: ВОЗВРАЩАЕМ ЭТУ ФУНКЦИЮ ---
 function formatImageUrl(path: string | null | undefined): string | null {
@@ -30,17 +31,17 @@ function formatImageUrl(path: string | null | undefined): string | null {
 // --- Auth Actions ---
 
 export async function getSession(): Promise<User | null> {
-  const token = cookies().get('session_token')?.value;
-  if (!token) return null;
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    if (typeof payload.id === 'number' && typeof payload.name === 'string' && typeof payload.email === 'string') {
-        return { id: payload.id, name: payload.name, email: payload.email };
+    const token = cookies().get('session_token')?.value;
+    if (!token) return null;
+    try {
+        const { payload } = await jwtVerify(token, secret);
+        if (typeof payload.id === 'number' && typeof payload.name === 'string' && typeof payload.email === 'string') {
+            return { id: payload.id, name: payload.name, email: payload.email };
+        }
+        return null;
+    } catch (e) {
+        return null;
     }
-    return null;
-  } catch (e) {
-    return null;
-  }
 }
 
 async function createSession(userPayload: User) {
@@ -48,13 +49,13 @@ async function createSession(userPayload: User) {
     const guestCartId = guestCartIdStr ? parseInt(guestCartIdStr, 10) : null;
 
     const payload: JWTPayload = { ...userPayload };
-    
+
     const token = await new SignJWT(payload)
-      .setProtectedHeader({ alg: 'HS256' })
-      .setIssuedAt()
-      .setExpirationTime('30d')
-      .sign(secret);
-  
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime('30d')
+        .sign(secret);
+
     cookies().set('session_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 60 * 60 * 24 * 30 });
 
     if (guestCartId && !isNaN(guestCartId)) {
@@ -71,10 +72,10 @@ export async function register(prevState: any, formData: FormData) {
     if (!name || !email || !password || password.length < 6) {
         return { success: false, message: 'Invalid data provided.' };
     }
-    
+
     const existingEmail = await prisma.users.findUnique({ where: { user_email: email } });
     if (existingEmail) return { success: false, message: 'User with this email already exists.' };
-    
+
     const existingName = await prisma.users.findUnique({ where: { user_name: name } });
     if (existingName) return { success: false, message: 'This username is already taken.' };
 
@@ -89,7 +90,7 @@ export async function register(prevState: any, formData: FormData) {
 
     const userPayload: User = { id: newUser.user_id, name: newUser.user_name || '', email: newUser.user_email || '' };
     await createSession(userPayload);
-    
+
     redirect('/profile');
 }
 
@@ -100,15 +101,15 @@ export async function login(prevState: any, formData: FormData) {
     if (!identifier || !password) {
         return { success: false, message: 'Please provide both identifier and password.' };
     }
-  
+
     const user = await prisma.users.findFirst({
         where: { OR: [{ user_email: identifier }, { user_name: identifier }] }
     });
-    
+
     if (!user || !user.user_password) {
-      return { success: false, message: 'Invalid credentials.' };
+        return { success: false, message: 'Invalid credentials.' };
     }
-    
+
     const passwordMatches = await bcrypt.compare(password, user.user_password);
     if (!passwordMatches) {
         return { success: false, message: 'Invalid credentials.' };
@@ -206,7 +207,7 @@ async function findOrCreateCartForCurrentUser(): Promise<number> {
 
 export async function addToCart(shopItemId: number, quantity: number, colorName: string, sizeName: string) {
     const cartOrderId = await findOrCreateCartForCurrentUser();
-    
+
     const variant = await prisma.products.findFirst({
         where: { item_id: shopItemId, colors: { color_name: colorName }, sizes: { size_name: sizeName } },
         include: { shop_items: true }
@@ -234,17 +235,17 @@ export async function addToCart(shopItemId: number, quantity: number, colorName:
 
 export async function updateItemQuantity(orderProductId: number, newQuantity: number) {
     if (newQuantity <= 0) {
-      await prisma.order_products.delete({ where: { id: orderProductId } });
+        await prisma.order_products.delete({ where: { id: orderProductId } });
     } else {
-      await prisma.order_products.update({
-        where: { id: orderProductId },
-        data: { quantity: newQuantity }
-      });
+        await prisma.order_products.update({
+            where: { id: orderProductId },
+            data: { quantity: newQuantity }
+        });
     }
     revalidatePath('/cart');
     return { success: true };
 }
-  
+
 export async function removeFromCart(orderProductId: number) {
     await prisma.order_products.delete({ where: { id: orderProductId } });
     revalidatePath('/cart');
@@ -255,8 +256,8 @@ export async function removeFromCart(orderProductId: number) {
 async function mergeGuestCartToUser(guestCartId: number, userId: number) {
     const userCart = await prisma.orders.findFirst({ where: { user_id: userId, order_status: 'CART' } });
     const userCartId = userCart ? userCart.order_id : (await prisma.orders.create({ data: { user_id: userId, order_status: 'CART' } })).order_id;
-    
-    if(guestCartId === userCartId) return;
+
+    if (guestCartId === userCartId) return;
 
     const guestItems = await prisma.order_products.findMany({ where: { order_id: guestCartId } });
 
