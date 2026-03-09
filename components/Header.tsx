@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import HeaderClientComponents from './HeaderClientComponents';
+import MobileMenu from './MobileMenu';
 import { User } from '@/types';
 import { forwardRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,6 +46,11 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
 
                 <nav aria-label="Top" className="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex h-[var(--header-height)] items-center relative">
+                        {/* Mobile hamburger menu (left side) */}
+                        <div className="flex items-center z-10">
+                            <MobileMenu />
+                        </div>
+
                         {/* Центрируем логотип */}
                         <div className="absolute inset-0 flex items-center justify-center">
                             <Link href="/">
@@ -53,7 +59,6 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
                                     <h1
                                         id="siteLogo"
                                         className="text-4xl font-extrabold tracking-widest text-black leading-none"
-                                        // Пока интро идёт — держим логотип невидимым (без фликера на старте)
                                         style={{ opacity: isIntroFinished ? 1 : 0 }}
                                     >
                                         TEKU
@@ -63,7 +68,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
                         </div>
 
                         {/* Правый блок */}
-                        <div className="ml-auto">
+                        <div className="ml-auto z-10">
                             <HeaderClientComponents />
                         </div>
                     </div>

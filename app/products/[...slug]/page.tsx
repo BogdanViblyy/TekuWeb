@@ -1,10 +1,25 @@
 // app/products/[...slug]/page.tsx
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { getProducts, getAvailableFilters } from '@/lib/data';
 import ProductFilters from '@/components/ProductFilters';
 import ProductList from '@/components/ProductList';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const [audience, categorySlug] = slug || [];
+  const category = categorySlug ? categorySlug.replace(/-/g, ' ') : null;
+  const audienceLabel = audience ? audience.charAt(0).toUpperCase() + audience.slice(1) : '';
+  const title = category
+    ? `${category} — ${audienceLabel} — TEKU`
+    : `${audienceLabel} — TEKU`;
+  return {
+    title,
+    description: `Shop ${category || audienceLabel} clothing at TEKU.`,
+  };
+}
 
 export default async function ProductsPage({
   params,

@@ -13,6 +13,7 @@ import { getSession } from './auth';
 
 export async function getCart(): Promise<{ cartId: number | null, items: CartItem[] }> {
     const user = await getSession();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma deeply nested include makes typing impractical
     let cart: any = null;
 
     const includePayload = {

@@ -47,7 +47,7 @@ export default function ProductList({ initialProducts, initialHasMore, audience,
       });
     }
   }, [inView, hasMore, isPending, page, audience, filters]);
-  
+
   // При смене фильтров сбрасываем состояние
   useEffect(() => {
     setProducts(initialProducts);
@@ -57,17 +57,17 @@ export default function ProductList({ initialProducts, initialHasMore, audience,
 
   return (
     <div>
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-            {products.map(product => (
-                <ProductCard key={`${product.itemId}-${page}`} product={product} />
-            ))}
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map(product => (
+          <ProductCard key={product.itemId} product={product} />
+        ))}
+      </div>
 
-        {hasMore && (
-            <div ref={ref} className="flex justify-center items-center py-8">
-                {isPending && <Spinner />}
-            </div>
-        )}
+      {hasMore && (
+        <div ref={ref} className="flex justify-center items-center py-8">
+          {isPending && <Spinner />}
+        </div>
+      )}
     </div>
   );
 }

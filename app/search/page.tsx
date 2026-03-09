@@ -1,10 +1,42 @@
 // app/search/page.tsx
 import Link from 'next/link';
-import { getCategoriesByAudience } from '@/lib/data';
+import type { Metadata } from 'next';
+import { getCategoriesByAudience, searchProducts } from '@/lib/data';
 import { Suspense } from 'react';
+import ProductCard from '@/components/ProductCard';
+
+export const metadata: Metadata = {
+    title: 'Search — TEKU',
+    description: 'Search for clothing, brands, and categories at TEKU.',
+};
 
 // Определяем аудитории как константу
 const audiences = ['WOMEN', 'MEN', 'KIDS'];
+
+// Компонент результатов поиска
+async function SearchResults({ query }: { query: string }) {
+    const results = await searchProducts(query);
+
+    if (results.length === 0) {
+        return (
+            <div className="text-center py-12">
+                <p className="text-gray-500 text-lg">No products found for &ldquo;{query}&rdquo;</p>
+                <p className="text-gray-400 mt-2">Try a different search term</p>
+            </div>
+        );
+    }
+
+    return (
+        <div>
+            <p className="text-gray-500 mb-6">{results.length} result{results.length !== 1 ? 's' : ''} for &ldquo;{query}&rdquo;</p>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+                {results.map((product) => (
+                    <ProductCard key={product.itemId} product={product} />
+                ))}
+            </div>
+        </div>
+    );
+}
 
 // Выносим основное содержимое в отдельный компонент, чтобы использовать Suspense для категорий
 async function SearchContent({ selectedAudience }: { selectedAudience: string }) {
@@ -62,10 +94,24 @@ function CategoriesSkeleton() {
 export default async function SearchPage({
     searchParams,
 }: {
-    searchParams?: Promise<{ audience?: string }>;
+    searchParams?: Promise<{ audience?: string; q?: string }>;
 }) {
     const resolvedSearchParams = searchParams ? await searchParams : {};
-    // Устанавливаем аудиторию по умолчанию, если параметр не задан
+    const query = resolvedSearchParams?.q?.trim() || '';
+
+    // If there's a text query, show search results
+    if (query.length >= 2) {
+        return (
+            <div className="container mx-auto px-4 py-8 max-w-4xl">
+                <h1 className="text-4xl font-bold mb-6 text-gray-900">Search</h1>
+                <Suspense fallback={<CategoriesSkeleton />}>
+                    <SearchResults query={query} />
+                </Suspense>
+            </div>
+        );
+    }
+
+    // Otherwise, show audience/category browser
     const selectedAudience = resolvedSearchParams?.audience && audiences.includes(resolvedSearchParams.audience.toUpperCase())
         ? resolvedSearchParams.audience.toUpperCase()
         : 'WOMEN';
@@ -81,7 +127,7 @@ export default async function SearchPage({
                         <Link
                             key={audience}
                             href={`/search?audience=${audience}`}
-                            scroll={false} // Предотвращает скролл наверх при смене таба
+                            scroll={false}
                             className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-md transition-colors
                                 ${selectedAudience === audience
                                     ? 'border-black text-black'

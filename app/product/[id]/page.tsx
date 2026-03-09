@@ -1,10 +1,21 @@
 // app/product/[id]/page.tsx
 import Image from 'next/image';
+import type { Metadata } from 'next';
 import AddToCartButton from '@/components/AddToCartButton';
 import { getDefaultImageUrl } from '@/lib/utils';
 import { getProductDetails } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import { ShopItemDetails } from '@/types';
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const { id } = await params;
+    const product = await getProductDetails(parseInt(id, 10));
+    if (!product) return { title: 'Product Not Found — TEKU' };
+    return {
+        title: `${product.name} — TEKU`,
+        description: product.description || `Shop ${product.name} at TEKU.`,
+    };
+}
 
 export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;

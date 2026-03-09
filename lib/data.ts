@@ -1,5 +1,5 @@
-// lib/data.ts
 import prisma from '@/lib/prisma';
+import { Prisma } from '@prisma/client';
 import { Product, ShopItemDetails, FilterOptions, UserOrderSummary, OrderFullDetails, CartItem } from '@/types';
 import { Decimal } from '@prisma/client/runtime/library';
 import { unstable_cache as cache } from 'next/cache';
@@ -8,7 +8,39 @@ import { formatImageUrl } from '@/lib/utils';
 
 // --- Функции для получения данных ---
 
-const PRODUCTS_PER_PAGE = 12; // <-- Определяем, сколько товаров на одной "странице"
+const PRODUCTS_PER_PAGE = 12;
+
+export async function searchProducts(query: string): Promise<Product[]> {
+    if (!query || query.trim().length < 2) return [];
+
+    const items = await prisma.shop_items.findMany({
+        where: {
+            OR: [
+                { item_name: { contains: query } },
+                { item_description: { contains: query } },
+                { brands: { brand_name: { contains: query } } },
+                { categories: { category_name: { contains: query } } },
+            ],
+        },
+        include: {
+            brands: true,
+            categories: true,
+        },
+        take: 24,
+        orderBy: { item_id: 'asc' },
+    });
+
+    return items.map((item) => ({
+        itemId: item.item_id,
+        name: item.item_name || 'No Name',
+        brandName: item.brands?.brand_name || null,
+        description: item.item_description,
+        price: (item.item_price as unknown as Decimal).toNumber(),
+        discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
+        imageURL: formatImageUrl(item.item_image),
+        productCategoryName: item.categories?.category_name || 'Uncategorized',
+    }));
+}
 
 export async function getProducts(
     audience: string,
@@ -24,7 +56,7 @@ export async function getProducts(
 ): Promise<{ products: Product[], hasMore: boolean }> {
     if (!audience) return { products: [], hasMore: false };
 
-    const where: any = {
+    const where: Prisma.shop_itemsWhereInput = {
         categories: {
             OR: [
                 { audience: audience.toUpperCase() },
@@ -34,7 +66,9 @@ export async function getProducts(
         },
     };
 
-    if (filters.categoryName) where.categories.category_name = filters.categoryName;
+    if (filters.categoryName) {
+        (where.categories as Record<string, unknown>).category_name = filters.categoryName;
+    }
     if (filters.brand) where.brands = { brand_name: filters.brand };
     if (filters.material) where.materials = { material_name: filters.material };
     if (filters.size) where.products = { some: { sizes: { size_name: filters.size } } };
@@ -55,7 +89,7 @@ export async function getProducts(
     const products = items.slice(0, PRODUCTS_PER_PAGE);
 
     return {
-        products: products.map((item: any) => ({
+        products: products.map((item) => ({
             itemId: item.item_id,
             name: item.item_name || 'No Name',
             brandName: item.brands?.brand_name || null,
@@ -86,8 +120,8 @@ export async function getProductDetails(id: number): Promise<ShopItemDetails | n
 
     if (!item) return null;
 
-    const availableColors = [...new Set(item.products.map((p: any) => p.colors?.color_name).filter(Boolean))] as string[];
-    const availableSizes = [...new Set(item.products.map((p: any) => p.sizes?.size_name).filter(Boolean))] as string[];
+    const availableColors = [...new Set(item.products.map((p) => p.colors?.color_name).filter(Boolean))] as string[];
+    const availableSizes = [...new Set(item.products.map((p) => p.sizes?.size_name).filter(Boolean))] as string[];
 
     return {
         itemId: item.item_id,
@@ -123,9 +157,9 @@ export async function getUserOrders(userId: number): Promise<UserOrderSummary[]>
         orderBy: { order_time: 'desc' }
     });
 
-    return orders.map((order: any) => {
-        const totalAmount = order.order_products.reduce((sum: number, item: any) => sum + item.quantity * ((item.price_at_purchase as unknown as Decimal).toNumber() - ((item.discount_on_unit as unknown as Decimal)?.toNumber() || 0)), 0);
-        const itemCount = order.order_products.reduce((sum: number, item: any) => sum + item.quantity, 0);
+    return orders.map((order) => {
+        const totalAmount = order.order_products.reduce((sum: number, item) => sum + item.quantity * ((item.price_at_purchase as unknown as Decimal).toNumber() - ((item.discount_on_unit as unknown as Decimal)?.toNumber() || 0)), 0);
+        const itemCount = order.order_products.reduce((sum: number, item) => sum + item.quantity, 0);
 
         return {
             orderId: order.order_id,
@@ -160,7 +194,7 @@ export async function getOrderDetails(orderId: number, userId: number): Promise<
 
     if (!order) return null;
 
-    const items: CartItem[] = order.order_products.map((op: any) => ({
+    const items: CartItem[] = order.order_products.map((op) => ({
         orderProductId: op.id,
         shopItemId: op.products.item_id,
         productName: op.products.shop_items.item_name || '',
@@ -172,7 +206,7 @@ export async function getOrderDetails(orderId: number, userId: number): Promise<
         imageURL: formatImageUrl(op.products.shop_items.item_image),
         productVariantId: op.products_id,
         availableStock: op.products.product_quantity,
-        productCategoryName: op.products.shop_items.categories.category_name || ''
+        productCategoryName: op.products.shop_items.categories?.category_name || ''
     }));
 
     const totalOrderAmount = items.reduce((sum, item) => sum + item.quantity * (item.priceAtPurchase - (item.discountOnUnit || 0)), 0);
@@ -206,7 +240,7 @@ export const getCategoriesByAudience = cache(
             distinct: ['category_name'],
             orderBy: { category_name: 'asc' }
         });
-        return categories.map((c: any) => c.category_name || '').filter(Boolean);
+        return categories.map((c) => c.category_name || '').filter(Boolean);
     },
     ['categories_by_audience'], // Уникальный ключ для кеша
     { revalidate: 3600 } // Кеш на 1 час
@@ -217,7 +251,7 @@ export const getAvailableFilters = cache(
     async (audience: string, categoryName?: string): Promise<FilterOptions> => {
         console.log(`\x1b[36m[CACHE MISS]\x1b[0m Fetching filters for ${audience}/${categoryName || 'all'}`);
 
-        const baseWhere: any = {
+        const baseWhere: Prisma.shop_itemsWhereInput = {
             categories: {
                 OR: [
                     { audience: audience.toUpperCase() },
@@ -226,8 +260,8 @@ export const getAvailableFilters = cache(
                 ],
             },
         };
-        if (categoryName) {
-            baseWhere.categories.category_name = categoryName;
+        if (categoryName && baseWhere.categories) {
+            (baseWhere.categories as Record<string, unknown>).category_name = categoryName;
         }
 
         const relevantShopItems = await prisma.shop_items.findMany({
@@ -240,7 +274,7 @@ export const getAvailableFilters = cache(
             return { categories, sizes: [], brands: [], materials: [], colors: [] };
         }
 
-        const relevantItemIds = relevantShopItems.map((item: any) => item.item_id);
+        const relevantItemIds = relevantShopItems.map((item) => item.item_id);
 
         const [brands, sizes, materials, colors, categories] = await Promise.all([
             prisma.brands.findMany({ where: { shop_items: { some: { item_id: { in: relevantItemIds } } } }, select: { brand_name: true }, orderBy: { brand_name: 'asc' } }),
@@ -252,10 +286,10 @@ export const getAvailableFilters = cache(
 
         return {
             categories,
-            brands: brands.map((b: any) => b.brand_name).filter(Boolean) as string[],
-            sizes: sizes.map((s: any) => s.size_name).filter(Boolean) as string[],
-            materials: materials.map((m: any) => m.material_name).filter(Boolean) as string[],
-            colors: colors.map((c: any) => ({ name: c.color_name || '', rgb: c.color_rgb })).filter((c: any) => c.name),
+            brands: brands.map((b) => b.brand_name).filter(Boolean) as string[],
+            sizes: sizes.map((s) => s.size_name).filter(Boolean) as string[],
+            materials: materials.map((m) => m.material_name).filter(Boolean) as string[],
+            colors: colors.map((c) => ({ name: c.color_name || '', rgb: c.color_rgb })).filter((c) => c.name),
         };
     },
     ['available_filters'], // Уникальный ключ для кеша
