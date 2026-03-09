@@ -5,13 +5,14 @@ import { redirect } from "next/navigation";
 import Image from 'next/image';
 import { getDefaultImageUrl } from "@/lib/utils";
 
-export default async function OrderDetailPage({ params }: { params: { id: string } }) {
+export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const user = await getSession();
     if (!user) {
         redirect('/auth/login');
     }
 
-    const orderId = parseInt(params.id, 10);
+    const { id } = await params;
+    const orderId = parseInt(id, 10);
     if (isNaN(orderId)) {
         return <div className="text-center py-20">Invalid order ID.</div>;
     }
@@ -33,7 +34,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                         <p className="font-semibold">Order Date</p>
                         <p>{new Date(order.orderTime).toLocaleString()}</p>
                     </div>
-                     <div>
+                    <div>
                         <p className="font-semibold">Order Status</p>
                         <p>{order.orderStatus}</p>
                     </div>
@@ -49,12 +50,12 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                 {order.items.map(item => (
                     <div key={item.orderProductId} className="flex items-start space-x-4 p-4 border rounded-lg">
                         <div className="w-24 h-24 relative flex-shrink-0">
-                            <Image 
-                                src={item.imageURL || getDefaultImageUrl(item.productCategoryName)} 
-                                alt={item.productName || 'Item'} 
-                                fill 
-                                style={{ objectFit: 'cover' }} 
-                                className="rounded-md" 
+                            <Image
+                                src={item.imageURL || getDefaultImageUrl(item.productCategoryName)}
+                                alt={item.productName || 'Item'}
+                                fill
+                                style={{ objectFit: 'cover' }}
+                                className="rounded-md"
                             />
                         </div>
                         <div className="flex-grow">
@@ -63,7 +64,7 @@ export default async function OrderDetailPage({ params }: { params: { id: string
                             <p className="text-sm">Qty: {item.quantity}</p>
                         </div>
                         <div className="text-right">
-                             <p className="font-semibold">${(item.quantity * (item.priceAtPurchase - (item.discountOnUnit || 0))).toFixed(2)}</p>
+                            <p className="font-semibold">${(item.quantity * (item.priceAtPurchase - (item.discountOnUnit || 0))).toFixed(2)}</p>
                         </div>
                     </div>
                 ))}

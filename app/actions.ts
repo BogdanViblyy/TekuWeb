@@ -8,13 +8,11 @@ import { jwtVerify, SignJWT, JWTPayload } from 'jose';
 import * as bcrypt from 'bcryptjs';
 import { Decimal } from '@prisma/client/runtime/library';
 import { getProducts } from '@/lib/data';
-import ProductCard from '@/components/ProductCard';
 import prisma from '@/lib/prisma';
 import { User, CartItem, OrderFullDetails, Product } from '@/types';
 import { jwtSecret } from '@/lib/env';
 
 
-const imagePrefix = '/images/';
 const secret = jwtSecret;
 
 // --- ИСПРАВЛЕНИЕ ЗДЕСЬ: ВОЗВРАЩАЕМ ЭТУ ФУНКЦИЮ ---
@@ -31,7 +29,8 @@ function formatImageUrl(path: string | null | undefined): string | null {
 // --- Auth Actions ---
 
 export async function getSession(): Promise<User | null> {
-    const token = cookies().get('session_token')?.value;
+    const cookieStore = await cookies();
+    const token = cookieStore.get('session_token')?.value;
     if (!token) return null;
     try {
         const { payload } = await jwtVerify(token, secret);
@@ -45,7 +44,8 @@ export async function getSession(): Promise<User | null> {
 }
 
 async function createSession(userPayload: User) {
-    const guestCartIdStr = cookies().get('guestCartId')?.value;
+    const cookieStore = await cookies();
+    const guestCartIdStr = cookieStore.get('guestCartId')?.value;
     const guestCartId = guestCartIdStr ? parseInt(guestCartIdStr, 10) : null;
 
     const payload: JWTPayload = { ...userPayload };
@@ -56,11 +56,11 @@ async function createSession(userPayload: User) {
         .setExpirationTime('30d')
         .sign(secret);
 
-    cookies().set('session_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 60 * 60 * 24 * 30 });
+    cookieStore.set('session_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 60 * 60 * 24 * 30 });
 
     if (guestCartId && !isNaN(guestCartId)) {
         await mergeGuestCartToUser(guestCartId, userPayload.id);
-        cookies().delete('guestCartId');
+        cookieStore.delete('guestCartId');
     }
 }
 
@@ -122,7 +122,8 @@ export async function login(prevState: any, formData: FormData) {
 }
 
 export async function logout() {
-    cookies().delete('session_token');
+    const cookieStore = await cookies();
+    cookieStore.delete('session_token');
     redirect('/');
 }
 
@@ -153,7 +154,8 @@ export async function getCart(): Promise<{ cartId: number | null, items: CartIte
             include: includePayload
         });
     } else {
-        const guestCartId = parseInt(cookies().get('guestCartId')?.value || '0', 10);
+        const cookieStore = await cookies();
+        const guestCartId = parseInt(cookieStore.get('guestCartId')?.value || '0', 10);
         if (guestCartId) {
             cart = await prisma.orders.findFirst({
                 where: { order_id: guestCartId, user_id: null, order_status: 'CART' },
@@ -194,13 +196,14 @@ async function findOrCreateCartForCurrentUser(): Promise<number> {
         const newCart = await prisma.orders.create({ data: { user_id: user.id, order_status: 'CART' } });
         return newCart.order_id;
     } else {
-        const guestCartId = parseInt(cookies().get('guestCartId')?.value || '0', 10);
+        const cookieStore = await cookies();
+        const guestCartId = parseInt(cookieStore.get('guestCartId')?.value || '0', 10);
         if (guestCartId) {
             const existingGuestCart = await prisma.orders.findFirst({ where: { order_id: guestCartId, user_id: null, order_status: 'CART' } });
             if (existingGuestCart) return existingGuestCart.order_id;
         }
         const newGuestCart = await prisma.orders.create({ data: { user_id: null, order_status: 'CART' } });
-        cookies().set('guestCartId', String(newGuestCart.order_id), { maxAge: 30 * 24 * 60 * 60, path: '/' });
+        cookieStore.set('guestCartId', String(newGuestCart.order_id), { maxAge: 30 * 24 * 60 * 60, path: '/' });
         return newGuestCart.order_id;
     }
 }

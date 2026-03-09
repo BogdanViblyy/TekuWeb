@@ -59,20 +59,21 @@ function CategoriesSkeleton() {
 }
 
 
-export default function SearchPage({
+export default async function SearchPage({
     searchParams,
 }: {
-    searchParams?: { audience?: string };
+    searchParams?: Promise<{ audience?: string }>;
 }) {
+    const resolvedSearchParams = searchParams ? await searchParams : {};
     // Устанавливаем аудиторию по умолчанию, если параметр не задан
-    const selectedAudience = searchParams?.audience && audiences.includes(searchParams.audience.toUpperCase())
-        ? searchParams.audience.toUpperCase()
+    const selectedAudience = resolvedSearchParams?.audience && audiences.includes(resolvedSearchParams.audience.toUpperCase())
+        ? resolvedSearchParams.audience.toUpperCase()
         : 'WOMEN';
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-2xl">
             <h1 className="text-4xl font-bold mb-6 text-gray-900">Search</h1>
-            
+
             {/* Панель выбора аудитории */}
             <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-6" aria-label="Tabs">
@@ -82,10 +83,9 @@ export default function SearchPage({
                             href={`/search?audience=${audience}`}
                             scroll={false} // Предотвращает скролл наверх при смене таба
                             className={`whitespace-nowrap py-3 px-1 border-b-2 font-medium text-md transition-colors
-                                ${
-                                    selectedAudience === audience
-                                        ? 'border-black text-black'
-                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                ${selectedAudience === audience
+                                    ? 'border-black text-black'
+                                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                 }
                             `}
                         >

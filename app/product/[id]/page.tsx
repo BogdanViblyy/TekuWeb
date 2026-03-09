@@ -6,12 +6,13 @@ import { getProductDetails } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import { ShopItemDetails } from '@/types';
 
-export default async function ProductDetailPage({ params }: { params: { id: string } }) {
-    const productId = parseInt(params.id, 10);
+export default async function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+    const productId = parseInt(id, 10);
     if (isNaN(productId)) {
         notFound();
     }
-    
+
     const product = await getProductDetails(productId);
 
     if (!product) {
@@ -26,10 +27,10 @@ export default async function ProductDetailPage({ params }: { params: { id: stri
         <div className="container mx-auto px-4 py-8">
             <div className="grid md:grid-cols-2 gap-8 lg:gap-16">
                 <div className="relative w-full aspect-square bg-white-100 rounded-lg overflow-hidden border">
-                    <Image 
-                        src={product.imageURL || getDefaultImageUrl(product.productCategoryName)} 
-                        alt={product.name || 'Product Image'} 
-                        fill 
+                    <Image
+                        src={product.imageURL || getDefaultImageUrl(product.productCategoryName)}
+                        alt={product.name || 'Product Image'}
+                        fill
                         sizes="(max-width: 768px) 100vw, 50vw"
                         className="object-contain p-4"
                     />

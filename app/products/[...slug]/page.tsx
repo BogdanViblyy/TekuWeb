@@ -10,31 +10,33 @@ export default async function ProductsPage({
   params,
   searchParams,
 }: {
-  params: { slug: string[] };
-  searchParams?: { [key: string]: string | string[] | undefined };
+  params: Promise<{ slug: string[] }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
-  const [audience, categorySlug] = params.slug || [];
+  const { slug } = await params;
+  const resolvedSearchParams = searchParams ? await searchParams : {};
+  const [audience, categorySlug] = slug || [];
 
   if (!audience) {
-      return (
-          <div className="container mx-auto text-center py-20">
-              <h1 className="text-2xl font-bold">Invalid URL</h1>
-              <p className="text-gray-600">Please select an audience like "Men", "Women", or "Kids".</p>
-              <Link href="/search" className="mt-4 inline-block bg-black text-white px-6 py-2 rounded">
-                  Go to Search
-              </Link>
-          </div>
-      );
+    return (
+      <div className="container mx-auto text-center py-20">
+        <h1 className="text-2xl font-bold">Invalid URL</h1>
+        <p className="text-gray-600">Please select an audience like "Men", "Women", or "Kids".</p>
+        <Link href="/search" className="mt-4 inline-block bg-black text-white px-6 py-2 rounded">
+          Go to Search
+        </Link>
+      </div>
+    );
   }
-  
+
   const categoryName = categorySlug ? categorySlug.replace(/-/g, ' ') : undefined;
-  
+
   const filters = {
     categoryName,
-    size: searchParams?.size as string,
-    brand: searchParams?.brand as string,
-    material: searchParams?.material as string,
-    color: searchParams?.color as string,
+    size: resolvedSearchParams?.size as string,
+    brand: resolvedSearchParams?.brand as string,
+    material: resolvedSearchParams?.material as string,
+    color: resolvedSearchParams?.color as string,
   }
 
   // Загружаем только первую страницу товаров и фильтры
@@ -56,8 +58,8 @@ export default async function ProductsPage({
         </aside>
         <main className="md:col-span-3">
           {initialProducts.length > 0 ? (
-            <ProductList 
-              initialProducts={initialProducts} 
+            <ProductList
+              initialProducts={initialProducts}
               initialHasMore={hasMore}
               audience={audience.toUpperCase()}
               filters={filters}

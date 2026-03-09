@@ -1,11 +1,10 @@
 // app/auth/login/page.tsx
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { login } from '@/app/actions';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -20,10 +19,10 @@ function SubmitButton() {
 const initialState = { success: false, message: '' };
 
 export default function LoginPage() {
-  const [state, formAction] = useFormState(login, initialState);
-  
+  const [state, formAction] = useActionState(login, initialState);
+
   // Redirect is now handled inside the server action itself, so useEffect is not needed here.
-  
+
   return (
     <div className="flex items-center justify-center min-h-screen-minus-header bg-gray-50">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
@@ -34,7 +33,7 @@ export default function LoginPage() {
             <input id="identifier" name="identifier" type="text" required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black" />
           </div>
           <div>
-            <label htmlFor="password"  className="block text-sm font-medium text-gray-700">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
             <input id="password" name="password" type="password" required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black" />
           </div>
           {state?.message && !state?.success && <p className="text-red-500 text-sm">{state.message}</p>}

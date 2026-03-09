@@ -1,29 +1,28 @@
 // app/auth/register/page.tsx
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { register } from '@/app/actions';
 import Link from 'next/link';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 function SubmitButton() {
-  const { pending } = useFormStatus();
-  return (
-    <button type="submit" disabled={pending} className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400">
-      {pending ? 'Creating Account...' : 'Create Account'}
-    </button>
-  );
+    const { pending } = useFormStatus();
+    return (
+        <button type="submit" disabled={pending} className="w-full bg-black text-white py-3 rounded-md hover:bg-gray-800 transition disabled:bg-gray-400">
+            {pending ? 'Creating Account...' : 'Create Account'}
+        </button>
+    );
 }
 
 // FIX: Correct initial state for useFormState
 const initialState = { success: false, message: '' };
 
 export default function RegisterPage() {
-    const [state, formAction] = useFormState(register, initialState);
-  
+    const [state, formAction] = useActionState(register, initialState);
+
     // Redirect is handled inside the server action
-    
+
     return (
         <div className="flex items-center justify-center min-h-screen-minus-header bg-gray-50">
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
