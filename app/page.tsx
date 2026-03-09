@@ -3,21 +3,17 @@
 import { motion, Variants } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useIntro } from '@/context/IntroContext';
-import { useAuth } from '@/context/AuthContext';
 import Intro from '@/components/Intro';
-import Header from '@/components/Header';
 import AudienceCard from '@/components/AudienceCard';
 import { useContentAnimation } from '@/context/ContentAnimationContext';
 
 export default function HomePage() {
   const { isIntroFinished } = useIntro();
   const { shouldAnimateContent, contentKey, resetContentAnimation } = useContentAnimation();
-  const { user } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
-    // Сбрасываем анимацию контента при каждой загрузке
     resetContentAnimation();
   }, []);
 
@@ -37,8 +33,6 @@ export default function HomePage() {
 
   return (
     <div className="relative min-h-screen">
-      <Header user={user} isIntroFinished={isIntroFinished} />
-
       {!isIntroFinished && (
         <Intro />
       )}

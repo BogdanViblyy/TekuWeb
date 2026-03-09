@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import Footer from '@/components/Footer';
+import LayoutHeader from '@/components/LayoutHeader';
 import { Toaster } from 'react-hot-toast';
 import '@/styles/globals.css';
 import { getSession, getCart } from '@/app/actions';
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode; }) {
   const user = await getSession();
   const cartItems = (await getCart()).items;
-  
+
   const bodyClass = user ? 'user-logged-in' : 'guest-user';
 
   return (
@@ -26,6 +27,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Providers user={user} cart={cartItems}>
           <div className="flex flex-col min-h-screen">
             <Toaster />
+            <LayoutHeader />
             <main className="flex-grow">
               {children}
             </main>
