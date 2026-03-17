@@ -109,6 +109,9 @@ export async function getProductDetails(id: number): Promise<ShopItemDetails | n
         include: {
             brands: true,
             categories: true,
+            item_images: {
+                orderBy: { sort_order: 'asc' },
+            },
             products: {
                 select: {
                     colors: true,
@@ -123,6 +126,11 @@ export async function getProductDetails(id: number): Promise<ShopItemDetails | n
     const availableColors = [...new Set(item.products.map((p) => p.colors?.color_name).filter(Boolean))] as string[];
     const availableSizes = [...new Set(item.products.map((p) => p.sizes?.size_name).filter(Boolean))] as string[];
 
+    // Build image gallery: use item_images table, fall back to primary item_image
+    const primaryImage = formatImageUrl(item.item_image);
+    const galleryImages = item.item_images.map((img) => formatImageUrl(img.image_url)).filter(Boolean) as string[];
+    const imageURLs = galleryImages.length > 0 ? galleryImages : (primaryImage ? [primaryImage] : []);
+
     return {
         itemId: item.item_id,
         name: item.item_name || 'No Name',
@@ -130,11 +138,12 @@ export async function getProductDetails(id: number): Promise<ShopItemDetails | n
         description: item.item_description,
         price: (item.item_price as unknown as Decimal).toNumber(),
         discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
-        imageURL: formatImageUrl(item.item_image),
+        imageURL: primaryImage,
         itemCode: item.item_code,
         productCategoryName: item.categories?.category_name || 'Uncategorized',
         availableColors,
-        availableSizes
+        availableSizes,
+        imageURLs,
     };
 }
 
@@ -292,6 +301,135 @@ export const getAvailableFilters = cache(
             colors: colors.map((c) => ({ name: c.color_name || '', rgb: c.color_rgb })).filter((c) => c.name),
         };
     },
-    ['available_filters'], // Уникальный ключ для кеша
-    { revalidate: 3600 } // Кеш на 1 час
+    ['available_filters'],
+    { revalidate: 3600 }
 );
+
+
+// --- Browse-By Data Functions ---
+
+export async function getAllBrands(): Promise<{ brandId: number; brandName: string; description: string | null; productCount: number }[]> {
+    const brands = await prisma.brands.findMany({
+        include: { _count: { select: { shop_items: true } } },
+        orderBy: { brand_name: 'asc' },
+    });
+    return brands
+        .filter((b) => b.brand_name && b._count.shop_items > 0)
+        .map((b) => ({
+            brandId: b.brand_id,
+            brandName: b.brand_name!,
+            description: b.brand_description,
+            productCount: b._count.shop_items,
+        }));
+}
+
+export async function getProductsByBrand(brandId: number): Promise<{ brand: { brandId: number; brandName: string; description: string | null } | null; products: Product[] }> {
+    const brand = await prisma.brands.findUnique({ where: { brand_id: brandId } });
+    if (!brand) return { brand: null, products: [] };
+
+    const items = await prisma.shop_items.findMany({
+        where: { brand_id: brandId },
+        include: { brands: true, categories: true },
+        orderBy: { item_id: 'asc' },
+    });
+
+    return {
+        brand: { brandId: brand.brand_id, brandName: brand.brand_name || '', description: brand.brand_description },
+        products: items.map((item) => ({
+            itemId: item.item_id,
+            name: item.item_name || 'No Name',
+            brandName: item.brands?.brand_name || null,
+            description: item.item_description,
+            price: (item.item_price as unknown as Decimal).toNumber(),
+            discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
+            imageURL: formatImageUrl(item.item_image),
+            productCategoryName: item.categories?.category_name || 'Uncategorized',
+        })),
+    };
+}
+
+export async function getAllMaterials(): Promise<{ materialId: number; materialName: string; productCount: number }[]> {
+    const materials = await prisma.materials.findMany({
+        include: { _count: { select: { shop_items: true } } },
+        orderBy: { material_name: 'asc' },
+    });
+    return materials
+        .filter((m) => m.material_name && m._count.shop_items > 0)
+        .map((m) => ({
+            materialId: m.material_id,
+            materialName: m.material_name!,
+            productCount: m._count.shop_items,
+        }));
+}
+
+export async function getProductsByMaterial(materialId: number): Promise<{ material: { materialId: number; materialName: string } | null; products: Product[] }> {
+    const material = await prisma.materials.findUnique({ where: { material_id: materialId } });
+    if (!material) return { material: null, products: [] };
+
+    const items = await prisma.shop_items.findMany({
+        where: { material_id: materialId },
+        include: { brands: true, categories: true },
+        orderBy: { item_id: 'asc' },
+    });
+
+    return {
+        material: { materialId: material.material_id, materialName: material.material_name || '' },
+        products: items.map((item) => ({
+            itemId: item.item_id,
+            name: item.item_name || 'No Name',
+            brandName: item.brands?.brand_name || null,
+            description: item.item_description,
+            price: (item.item_price as unknown as Decimal).toNumber(),
+            discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
+            imageURL: formatImageUrl(item.item_image),
+            productCategoryName: item.categories?.category_name || 'Uncategorized',
+        })),
+    };
+}
+
+export async function getAllColors(): Promise<{ colorId: number; colorName: string; colorRgb: string | null; productCount: number }[]> {
+    const colors = await prisma.colors.findMany({
+        include: { _count: { select: { products: true } } },
+        orderBy: { color_name: 'asc' },
+    });
+    return colors
+        .filter((c) => c.color_name && c._count.products > 0)
+        .map((c) => ({
+            colorId: c.color_id,
+            colorName: c.color_name!,
+            colorRgb: c.color_rgb,
+            productCount: c._count.products,
+        }));
+}
+
+export async function getProductsByColor(colorId: number): Promise<{ color: { colorId: number; colorName: string; colorRgb: string | null } | null; products: Product[] }> {
+    const color = await prisma.colors.findUnique({ where: { color_id: colorId } });
+    if (!color) return { color: null, products: [] };
+
+    const variants = await prisma.products.findMany({
+        where: { color_id: colorId },
+        select: { item_id: true },
+        distinct: ['item_id'],
+    });
+    const itemIds = variants.map((v) => v.item_id);
+
+    const items = await prisma.shop_items.findMany({
+        where: { item_id: { in: itemIds } },
+        include: { brands: true, categories: true },
+        orderBy: { item_id: 'asc' },
+    });
+
+    return {
+        color: { colorId: color.color_id, colorName: color.color_name || '', colorRgb: color.color_rgb },
+        products: items.map((item) => ({
+            itemId: item.item_id,
+            name: item.item_name || 'No Name',
+            brandName: item.brands?.brand_name || null,
+            description: item.item_description,
+            price: (item.item_price as unknown as Decimal).toNumber(),
+            discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
+            imageURL: formatImageUrl(item.item_image),
+            productCategoryName: item.categories?.category_name || 'Uncategorized',
+        })),
+    };
+}

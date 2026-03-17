@@ -1,24 +1,24 @@
 // types/index.ts
 
 export interface User {
-  id: number;
-  name: string;
-  email: string;
+    id: number;
+    name: string;
+    email: string;
 }
 
 export interface CartItem {
-  orderProductId: number;
-  shopItemId: number;
-  productName: string;
-  quantity: number;
-  priceAtPurchase: number;
-  discountOnUnit: number | null;
-  colorName: string;
-  sizeName: string;
-  imageURL: string | null;
-  productVariantId: number;
-  availableStock: number | null;
-  productCategoryName: string;
+    orderProductId: number;
+    shopItemId: number;
+    productName: string;
+    quantity: number;
+    priceAtPurchase: number;
+    discountOnUnit: number | null;
+    colorName: string;
+    sizeName: string;
+    imageURL: string | null;
+    productVariantId: number;
+    availableStock: number | null;
+    productCategoryName: string;
 }
 
 export interface Product {
@@ -36,6 +36,7 @@ export interface ShopItemDetails extends Product {
     itemCode: string | null;
     availableColors: string[];
     availableSizes: string[];
+    imageURLs: string[];
 }
 
 export interface ColorFilter {

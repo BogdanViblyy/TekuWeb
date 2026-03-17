@@ -81,24 +81,36 @@ model products {
 }
 
 model shop_items {
-  item_id          Int         @id @default(autoincrement())
-  item_name        String?     @db.VarChar(255)
-  item_price       Decimal     @default(0.00) @db.Decimal(10, 2)
-  item_discount    Decimal?    @db.Decimal(10, 2)
-  item_code        String?     @db.VarChar(50)
-  item_description String?     @db.Text
+  item_id          Int           @id @default(autoincrement())
+  item_name        String?       @db.VarChar(255)
+  item_price       Decimal       @default(0.00) @db.Decimal(10, 2)
+  item_discount    Decimal?      @db.Decimal(10, 2)
+  item_code        String?       @db.VarChar(50)
+  item_description String?       @db.Text
   category_id      Int?
   brand_id         Int?
   material_id      Int?
-  item_image       String?     @db.Text
+  item_image       String?       @db.Text
   products         products[]
-  brands           brands?     @relation(fields: [brand_id], references: [brand_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_brand")
-  categories       categories? @relation(fields: [category_id], references: [category_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_category")
-  materials        materials?  @relation(fields: [material_id], references: [material_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_material")
+  item_images      item_images[]
+  wishlist         wishlist[]
+  brands           brands?       @relation(fields: [brand_id], references: [brand_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_brand")
+  categories       categories?   @relation(fields: [category_id], references: [category_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_category")
+  materials        materials?    @relation(fields: [material_id], references: [material_id], onDelete: Restrict, onUpdate: Restrict, map: "fk_shopitem_material")
 
   @@index([brand_id], map: "fk_shopitem_brand")
   @@index([category_id], map: "fk_shopitem_category")
   @@index([material_id], map: "fk_shopitem_material")
+}
+
+model item_images {
+  id         Int        @id @default(autoincrement())
+  item_id    Int
+  image_url  String     @db.Text
+  sort_order Int        @default(0)
+  shop_items shop_items @relation(fields: [item_id], references: [item_id], onDelete: Cascade, map: "fk_itemimage_shopitem")
+
+  @@index([item_id], map: "fk_itemimage_shopitem")
 }
 
 model sizes {
@@ -108,10 +120,24 @@ model sizes {
 }
 
 model users {
-  user_id       Int      @id @default(autoincrement())
-  user_name     String   @unique(map: "uk_user_name") @db.VarChar(50)
-  user_password String   @db.VarChar(255)
-  user_email    String   @unique(map: "uk_user_email") @db.VarChar(100)
-  created_at    DateTime @default(now()) @db.Timestamp(0)
+  user_id       Int        @id @default(autoincrement())
+  user_name     String     @unique(map: "uk_user_name") @db.VarChar(50)
+  user_password String     @db.VarChar(255)
+  user_email    String     @unique(map: "uk_user_email") @db.VarChar(100)
+  created_at    DateTime   @default(now()) @db.Timestamp(0)
   orders        orders[]
+  wishlist      wishlist[]
+}
+
+model wishlist {
+  id         Int        @id @default(autoincrement())
+  user_id    Int
+  item_id    Int
+  created_at DateTime   @default(now()) @db.Timestamp(0)
+  users      users      @relation(fields: [user_id], references: [user_id], onDelete: Cascade, map: "fk_wishlist_user")
+  shop_items shop_items @relation(fields: [item_id], references: [item_id], onDelete: Cascade, map: "fk_wishlist_item")
+
+  @@unique([user_id, item_id], map: "uk_wishlist_user_item")
+  @@index([user_id], map: "fk_wishlist_user")
+  @@index([item_id], map: "fk_wishlist_item")
 }
