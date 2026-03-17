@@ -69,4 +69,11 @@ export interface OrderFullDetails {
     userName: string;
     totalOrderAmount: number;
     items: CartItem[];
+    statusHistory: StatusHistoryEntry[];
+}
+
+export interface StatusHistoryEntry {
+    status: string;
+    changedAt: string; // ISO string
+    note: string | null;
 }

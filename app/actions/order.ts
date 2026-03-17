@@ -47,6 +47,14 @@ export async function placeOrder(): Promise<{ success: boolean; message: string;
                     order_time: new Date()
                 }
             });
+
+            await tx.order_status_history.create({
+                data: {
+                    order_id: cart.order_id,
+                    status: 'PLACED',
+                    note: 'Order placed by customer.',
+                }
+            });
         });
 
         revalidatePath('/cart');

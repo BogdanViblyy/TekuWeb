@@ -1,0 +1,171 @@
+{
+    "common": {
+        "brandName": "TEKU",
+        "madeIn": "Made in Europe",
+        "allRightsReserved": "All Rights Reserved.",
+        "styleIsEverything": "Style is everything.",
+        "browseProducts": "Browse products",
+        "backTo": "Back to",
+        "products": "products",
+        "product": "product",
+        "items": "items",
+        "item": "item",
+        "savedItems": "saved items",
+        "savedItem": "saved item"
+    },
+    "nav": {
+        "women": "Women",
+        "men": "Men",
+        "kids": "Kids",
+        "search": "Search",
+        "shop": "Shop",
+        "account": "Account",
+        "profile": "Profile",
+        "orders": "Orders",
+        "wishlist": "Wishlist",
+        "cart": "Cart",
+        "logIn": "Log In",
+        "register": "Register",
+        "logOut": "Log Out",
+        "openMenu": "Open menu",
+        "closeMenu": "Close menu"
+    },
+    "home": {
+        "menswear": "Menswear",
+        "womenswear": "Womenswear",
+        "kidswear": "Kidswear",
+        "loginBanner": "Log in for a personalized experience"
+    },
+    "search": {
+        "title": "Search",
+        "pageTitle": "Search — TEKU",
+        "pageDescription": "Search for clothing, brands, and categories at TEKU.",
+        "placeholder": "Search products...",
+        "resultsFor": "Results for",
+        "noResults": "No products found for",
+        "tryDifferent": "Try a different search term.",
+        "browseByCategory": "Browse by Category",
+        "allAudiences": "All"
+    },
+    "product": {
+        "notFound": "Product Not Found",
+        "addToCart": "Add to Cart",
+        "adding": "Adding...",
+        "selectColor": "Select color",
+        "selectSize": "Select size"
+    },
+    "cart": {
+        "title": "Shopping Cart",
+        "empty": "Your cart is empty.",
+        "total": "Total",
+        "placeOrder": "Place Order",
+        "placing": "Placing...",
+        "remove": "Remove",
+        "qty": "Qty"
+    },
+    "auth": {
+        "loginTitle": "Log In",
+        "registerTitle": "Create Account",
+        "email": "Email",
+        "password": "Password",
+        "username": "Username",
+        "loginButton": "Log In",
+        "registerButton": "Create Account",
+        "noAccount": "Don't have an account?",
+        "haveAccount": "Already have an account?",
+        "loggingIn": "Logging in...",
+        "registering": "Creating..."
+    },
+    "profile": {
+        "title": "Profile",
+        "welcome": "Welcome",
+        "logoutButton": "Log Out",
+        "yourOrders": "Your Orders",
+        "noOrders": "You haven't placed any orders yet.",
+        "viewOrder": "View Order",
+        "orderDate": "Order Date",
+        "orderStatus": "Status",
+        "orderTotal": "Order Total",
+        "orderDetails": "Order Details",
+        "orderItems": "Items in this order"
+    },
+    "wishlist": {
+        "title": "Wishlist",
+        "empty": "Your wishlist is empty.",
+        "addedToast": "Added to wishlist!",
+        "removedToast": "Removed from wishlist.",
+        "loginRequired": "Log in to save items to your wishlist.",
+        "error": "Something went wrong."
+    },
+    "orderStatus": {
+        "placed": "Placed",
+        "processing": "Processing",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "cancelled": "Cancelled",
+        "orderCancelled": "Order Cancelled"
+    },
+    "browse": {
+        "brands": "Brands",
+        "materials": "Materials",
+        "colors": "Colors",
+        "allBrands": "All Brands — TEKU",
+        "allMaterials": "All Materials — TEKU",
+        "allColors": "All Colors — TEKU",
+        "noBrands": "No brands found.",
+        "noMaterials": "No materials found.",
+        "noColors": "No colors found.",
+        "allBrandsLink": "← All Brands",
+        "allMaterialsLink": "← All Materials",
+        "allColorsLink": "← All Colors"
+    },
+    "footer": {
+        "shop": "Shop",
+        "company": "Company",
+        "about": "About",
+        "contact": "Contact",
+        "privacy": "Privacy Policy"
+    },
+    "about": {
+        "title": "About TEKU",
+        "description": "TEKU is a modern premium clothing store offering carefully curated fashion from Europe's finest brands.",
+        "mission": "Our Mission",
+        "missionText": "We believe that quality clothing is an investment in yourself. Every piece in our collection has been selected for its craftsmanship, materials, and timeless design.",
+        "values": "Our Values",
+        "quality": "Quality",
+        "qualityText": "Only the finest materials and craftsmanship.",
+        "sustainability": "Sustainability",
+        "sustainabilityText": "Committed to ethical and sustainable fashion.",
+        "style": "Style",
+        "styleText": "Timeless designs that transcend trends."
+    },
+    "contact": {
+        "title": "Contact Us",
+        "description": "We'd love to hear from you. Reach out to us with any questions or feedback.",
+        "emailLabel": "Email",
+        "emailValue": "support@teku.store",
+        "hoursLabel": "Business Hours",
+        "hoursValue": "Monday–Friday, 9:00–18:00 CET",
+        "addressLabel": "Address",
+        "addressValue": "TEKU Fashion HQ, Amsterdam, Netherlands"
+    },
+    "privacy": {
+        "title": "Privacy Policy",
+        "lastUpdated": "Last updated: March 2026",
+        "intro": "At TEKU, we take your privacy seriously. This policy describes how we collect, use, and protect your personal information.",
+        "dataWeCollect": "Data We Collect",
+        "dataList": "Account information (name, email), Order and payment details, Browsing behavior for personalization",
+        "howWeUse": "How We Use Your Data",
+        "useList": "Processing and fulfilling your orders, Personalizing your shopping experience, Communicating with you about your account and orders",
+        "yourRights": "Your Rights",
+        "rightsText": "You have the right to access, correct, or delete your personal data at any time. Contact us at support@teku.store."
+    },
+    "errors": {
+        "notFoundTitle": "Page Not Found",
+        "notFoundText": "Sorry, the page you're looking for doesn't exist.",
+        "goHome": "Go Home",
+        "errorTitle": "Something went wrong!",
+        "errorText": "An unexpected error occurred.",
+        "tryAgain": "Try again"
+    }
+}

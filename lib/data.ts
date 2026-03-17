@@ -187,6 +187,9 @@ export async function getOrderDetails(orderId: number, userId: number): Promise<
         where: { order_id: orderId, user_id: userId, NOT: { order_status: 'CART' } },
         include: {
             users: true,
+            order_status_history: {
+                orderBy: { changed_at: 'asc' },
+            },
             order_products: {
                 include: {
                     products: {
@@ -220,6 +223,12 @@ export async function getOrderDetails(orderId: number, userId: number): Promise<
 
     const totalOrderAmount = items.reduce((sum, item) => sum + item.quantity * (item.priceAtPurchase - (item.discountOnUnit || 0)), 0);
 
+    const statusHistory = order.order_status_history.map((h) => ({
+        status: h.status,
+        changedAt: h.changed_at.toISOString(),
+        note: h.note,
+    }));
+
     return {
         orderId: order.order_id,
         orderCode: order.order_code || '',
@@ -228,6 +237,7 @@ export async function getOrderDetails(orderId: number, userId: number): Promise<
         userName: order.users?.user_name || 'Guest',
         totalOrderAmount,
         items,
+        statusHistory,
     };
 }
 

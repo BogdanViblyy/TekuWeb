@@ -1,15 +1,18 @@
 // middleware.ts
+import createMiddleware from 'next-intl/middleware';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
+import { routing } from './i18n/routing';
 
-// Routes that require authentication
-const protectedRoutes = ['/profile', '/profile/orders'];
+const intlMiddleware = createMiddleware(routing);
 
-// Routes that should redirect to home if already authenticated
-const authRoutes = ['/auth/login', '/auth/register'];
+// Routes that require authentication (without locale prefix)
+const protectedPaths = ['/profile', '/profile/orders', '/profile/wishlist'];
 
-// Encode the secret once
+// Routes that should redirect home if already authenticated
+const authPaths = ['/auth/login', '/auth/register'];
+
 function getJwtSecret(): Uint8Array {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -31,24 +34,34 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
     }
 }
 
+function stripLocalePrefix(pathname: string): string {
+    for (const locale of routing.locales) {
+        if (pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`) {
+            return pathname.slice(`/${locale}`.length) || '/';
+        }
+    }
+    return pathname;
+}
+
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
+    const pathWithoutLocale = stripLocalePrefix(pathname);
 
     // Check if the current path matches a protected route
-    const isProtectedRoute = protectedRoutes.some(
-        (route) => pathname === route || pathname.startsWith(route + '/')
+    const isProtectedRoute = protectedPaths.some(
+        (route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
     );
 
     // Check if the current path is an auth route
-    const isAuthRoute = authRoutes.some(
-        (route) => pathname === route || pathname.startsWith(route + '/')
+    const isAuthRoute = authPaths.some(
+        (route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
     );
 
     if (isProtectedRoute) {
         const authenticated = await isAuthenticated(request);
         if (!authenticated) {
             const loginUrl = new URL('/auth/login', request.url);
-            loginUrl.searchParams.set('callbackUrl', pathname);
+            loginUrl.searchParams.set('callbackUrl', pathWithoutLocale);
             return NextResponse.redirect(loginUrl);
         }
     }
@@ -60,13 +73,17 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    return NextResponse.next();
+    // Run next-intl middleware for locale detection and routing
+    return intlMiddleware(request);
 }
 
 export const config = {
     matcher: [
-        // Match protected and auth routes
-        '/profile/:path*',
-        '/auth/:path*',
+        // Match all pathnames except for:
+        // - /api (API routes)
+        // - /_next (Next internals)  
+        // - /images, /fonts, /_vercel (static files)
+        // - Files with extensions (.ico, .png, etc.)
+        '/((?!api|_next|images|fonts|_vercel|.*\\..*).*)',
     ],
 };
