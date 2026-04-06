@@ -1,36 +1,38 @@
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 
 export const metadata = {
     title: 'Privacy Policy — TEKU',
     description: 'TEKU privacy policy and data handling practices.',
 };
 
-export default function PrivacyPage() {
+export default async function PrivacyPage() {
+    const tPrivacy = await getTranslations('privacy');
+    const tCommon = await getTranslations('common');
+
     return (
         <div className="container mx-auto max-w-2xl px-4 py-12">
-            <h1 className="text-4xl font-bold mb-6">Privacy Policy</h1>
+            <h1 className="text-4xl font-bold mb-2">{tPrivacy('title')}</h1>
+            <p className="text-sm text-gray-400 mb-6">{tPrivacy('lastUpdated')}</p>
             <div className="prose prose-gray max-w-none">
                 <p className="text-gray-600 leading-relaxed mb-4">
-                    Your privacy is important to us. This policy explains how TEKU collects, uses, and
-                    protects your personal information.
+                    {tPrivacy('intro')}
                 </p>
-                <h2 className="text-xl font-semibold mt-6 mb-3">Data We Collect</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">{tPrivacy('dataWeCollect')}</h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
-                    We collect information you provide when creating an account, placing orders, or contacting us.
-                    This includes your name, email address, and order history.
+                    {tPrivacy('dataList')}
                 </p>
-                <h2 className="text-xl font-semibold mt-6 mb-3">How We Use Your Data</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">{tPrivacy('howWeUse')}</h2>
                 <p className="text-gray-600 leading-relaxed mb-4">
-                    We use your data to process orders, improve our services, and communicate with you about
-                    your account. We never sell your personal information to third parties.
+                    {tPrivacy('useList')}
                 </p>
-                <h2 className="text-xl font-semibold mt-6 mb-3">Contact</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">{tPrivacy('yourRights')}</h2>
                 <p className="text-gray-600 leading-relaxed mb-8">
-                    For privacy-related inquiries, contact us at privacy@teku.store.
+                    {tPrivacy('rightsText')}
                 </p>
             </div>
             <Link href="/" className="text-black font-medium underline hover:no-underline">
-                ← Back to Home
+                ← {tCommon('backTo')} Home
             </Link>
         </div>
     );

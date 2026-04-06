@@ -1,6 +1,7 @@
 // app/cart/page.tsx
 import Image from 'next/image';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 import { getCart } from '@/app/actions';
 import CartActions from '@/components/CartActions';
 import CheckoutButton from '@/components/CheckoutButton';
@@ -10,12 +11,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function CartPage() {
     const { items: cartItems } = await getCart();
+    const tCart = await getTranslations('cart');
 
     if (!cartItems || cartItems.length === 0) {
         return (
             <div className="container mx-auto px-4 py-12 text-center">
-                <h1 className="text-4xl font-bold mb-4">Your Bag is Empty</h1>
-                <p className="text-gray-600 mb-8">Looks like you haven't added anything to your bag yet.</p>
+                <h1 className="text-4xl font-bold mb-4">{tCart('title')}</h1>
+                <p className="text-gray-600 mb-8">{tCart('empty')}</p>
                 <Link href="/search" className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition">
                     Continue Shopping
                 </Link>
@@ -32,7 +34,7 @@ export default async function CartPage() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-6">Shopping Bag ({totalItems})</h1>
+            <h1 className="text-3xl font-bold mb-6">{tCart('title')} ({totalItems})</h1>
             <div className="grid lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-4">
                     {cartItems.map(item => (
@@ -67,7 +69,7 @@ export default async function CartPage() {
                             <span>FREE</span>
                         </div>
                         <div className="border-t pt-4 flex justify-between font-bold text-lg">
-                            <span>Total</span>
+                            <span>{tCart('total')}</span>
                             <span>${totalPrice.toFixed(2)}</span>
                         </div>
                         <CheckoutButton />

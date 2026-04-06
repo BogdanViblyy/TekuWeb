@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Image from 'next/image';
 import { getDefaultImageUrl } from "@/lib/utils";
 import OrderStatusTimeline from "@/components/OrderStatusTimeline";
+import { getTranslations } from 'next-intl/server';
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const user = await getSession();
@@ -19,6 +20,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     }
 
     const order = await getOrderDetails(orderId, user.id);
+    const tProfile = await getTranslations('profile');
+    const tStatus = await getTranslations('orderStatus');
 
     if (!order) {
         return <div className="text-center py-20 pt-[calc(var(--header-total-height)+3rem)]">Order not found or you do not have permission to view it.</div>
@@ -26,7 +29,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
     return (
         <div className="container mx-auto max-w-4xl px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
-            <h1 className="text-3xl font-bold">Order Details</h1>
+            <h1 className="text-3xl font-bold">{tProfile('orderDetails')}</h1>
             <p className="text-lg text-gray-600 mb-6">Order #{order.orderCode}</p>
 
             {/* Status Timeline */}
@@ -40,21 +43,21 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <div className="bg-gray-50 p-6 rounded-lg mb-8">
                 <div className="grid md:grid-cols-3 gap-4">
                     <div>
-                        <p className="font-semibold">Order Date</p>
+                        <p className="font-semibold">{tProfile('orderDate')}</p>
                         <p>{new Date(order.orderTime).toLocaleString()}</p>
                     </div>
                     <div>
-                        <p className="font-semibold">Status</p>
-                        <p className="capitalize">{order.orderStatus.toLowerCase()}</p>
+                        <p className="font-semibold">{tProfile('orderStatus')}</p>
+                        <p className="capitalize">{tStatus(order.orderStatus.toLowerCase() as any)}</p>
                     </div>
                     <div>
-                        <p className="font-semibold">Order Total</p>
+                        <p className="font-semibold">{tProfile('orderTotal')}</p>
                         <p>${order.totalOrderAmount.toFixed(2)}</p>
                     </div>
                 </div>
             </div>
 
-            <h2 className="text-2xl font-bold mb-4">Items in this order</h2>
+            <h2 className="text-2xl font-bold mb-4">{tProfile('orderItems')}</h2>
             <div className="space-y-4">
                 {order.items.map(item => (
                     <div key={item.orderProductId} className="flex items-start space-x-4 p-4 border rounded-lg">

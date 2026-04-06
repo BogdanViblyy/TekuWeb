@@ -4,7 +4,7 @@
 import Header from './Header';
 import { useAuth } from '@/context/AuthContext';
 import { useIntro } from '@/context/IntroContext';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 
 export default function LayoutHeader() {
     const { user } = useAuth();

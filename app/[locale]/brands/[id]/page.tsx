@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import { getProductsByBrand } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -22,12 +23,15 @@ export default async function BrandDetailPage({ params }: { params: Promise<{ id
     const { brand, products } = await getProductsByBrand(brandId);
     if (!brand) notFound();
 
+    const tCommon = await getTranslations('common');
+    const tBrowse = await getTranslations('browse');
+
     return (
         <div className="container mx-auto max-w-6xl px-4 py-12 pt-[calc(var(--header-total-height)+3rem)]">
-            <Link href="/brands" className="text-sm text-gray-500 hover:text-black mb-4 inline-block">← All Brands</Link>
+            <Link href="/brands" className="text-sm text-gray-500 hover:text-black mb-4 inline-block">{tBrowse('allBrandsLink')}</Link>
             <h1 className="text-4xl font-bold mb-2">{brand.brandName}</h1>
             {brand.description && <p className="text-gray-600 mb-8">{brand.description}</p>}
-            <p className="text-sm text-gray-500 mb-6">{products.length} product{products.length !== 1 ? 's' : ''}</p>
+            <p className="text-sm text-gray-500 mb-6">{products.length} {products.length !== 1 ? tCommon('products') : tCommon('product')}</p>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                     <ProductCard key={product.itemId} product={product} />

@@ -1,7 +1,7 @@
 // components/HeaderClientComponents.tsx
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { ShoppingBagIcon, UserIcon } from '@heroicons/react/24/outline';
 import { useCart } from '@/context/CartContext';
 import Search from './Search'; // Мы создадим этот компонент следующим

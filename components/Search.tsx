@@ -3,9 +3,11 @@
 
 import { useState } from 'react'; 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useTranslations } from 'next-intl';
 
 export default function Search() {
   const [isHovered, setIsHovered] = useState(false);
+  const tSearch = useTranslations('search');
 
   return (
     <div 
@@ -22,7 +24,7 @@ export default function Search() {
           <input
             type="text"
             name="q"
-            placeholder="Search"
+            placeholder={tSearch('title')}
             className={`h-full rounded-md border border-gray-300 px-2 transition-all duration-300 ease-in-out ${isHovered ? 'w-48 opacity-100' : 'w-0 opacity-0'}`}
             style={{ pointerEvents: isHovered ? 'auto' : 'none' }}
           />

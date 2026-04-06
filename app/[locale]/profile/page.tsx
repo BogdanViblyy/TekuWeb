@@ -2,8 +2,9 @@
 import { getSession } from "@/app/actions";
 import { getUserOrders } from "@/lib/data";
 import { redirect } from "next/navigation";
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { logout } from '@/app/actions';
+import { getTranslations } from 'next-intl/server';
 
 export default async function ProfilePage() {
     const user = await getSession();
@@ -14,10 +15,11 @@ export default async function ProfilePage() {
 
     const recentOrders = await getUserOrders(user.id);
     const mostRecentOrder = recentOrders.length > 0 ? recentOrders[0] : null;
+    const tProfile = await getTranslations('profile');
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-4xl font-bold mb-2">Welcome, {user.name}!</h1>
+            <h1 className="text-4xl font-bold mb-2">{tProfile('welcome')}, {user.name}!</h1>
             <p className="text-gray-600 mb-8">{user.email}</p>
 
             <div className="grid md:grid-cols-2 gap-8">
@@ -27,18 +29,18 @@ export default async function ProfilePage() {
                     {mostRecentOrder ? (
                         <div>
                             <p><strong>Order #:</strong> {mostRecentOrder.orderCode}</p>
-                            <p><strong>Date:</strong> {new Date(mostRecentOrder.orderTime).toLocaleDateString()}</p>
-                            <p><strong>Status:</strong> <span className="font-medium">{mostRecentOrder.orderStatus}</span></p>
-                            <p><strong>Total:</strong> ${mostRecentOrder.totalAmount.toFixed(2)}</p>
+                            <p><strong>{tProfile('orderDate')}:</strong> {new Date(mostRecentOrder.orderTime).toLocaleDateString()}</p>
+                            <p><strong>{tProfile('orderStatus')}:</strong> <span className="font-medium">{mostRecentOrder.orderStatus}</span></p>
+                            <p><strong>{tProfile('orderTotal')}:</strong> ${mostRecentOrder.totalAmount.toFixed(2)}</p>
                              <Link href={`/profile/orders/${mostRecentOrder.orderId}`} className="text-blue-600 hover:underline mt-2 inline-block">
-                                View Details
+                                {tProfile('viewOrder')}
                             </Link>
                         </div>
                     ) : (
-                        <p>You have no recent orders.</p>
+                        <p>{tProfile('noOrders')}</p>
                     )}
                     <Link href="/profile/orders" className="block text-center w-full bg-gray-200 text-black mt-6 py-2 rounded-md hover:bg-gray-300 transition">
-                        View All Orders
+                        {tProfile('yourOrders')}
                     </Link>
                 </div>
 
@@ -50,7 +52,7 @@ export default async function ProfilePage() {
                         {/* More settings can be added here */}
                         <form action={logout}>
                             <button type="submit" className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition">
-                                Sign Out
+                                {tProfile('logoutButton')}
                             </button>
                         </form>
                     </div>

@@ -5,7 +5,8 @@ import prisma from '@/lib/prisma';
 import { Decimal } from '@prisma/client/runtime/library';
 import { formatImageUrl } from '@/lib/utils';
 import ProductCard from '@/components/ProductCard';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
@@ -18,15 +19,17 @@ export default async function WishlistPage() {
     if (!user) redirect('/auth/login');
 
     const wishlistItemIds = await getWishlist();
+    const tWishlist = await getTranslations('wishlist');
+    const tCommon = await getTranslations('common');
 
     if (wishlistItemIds.length === 0) {
         return (
             <div className="container mx-auto max-w-4xl px-4 py-12 pt-[calc(var(--header-total-height)+3rem)]">
-                <h1 className="text-4xl font-bold mb-6">Wishlist</h1>
-                <p className="text-gray-500 text-center py-12">Your wishlist is empty.</p>
+                <h1 className="text-4xl font-bold mb-6">{tWishlist('title')}</h1>
+                <p className="text-gray-500 text-center py-12">{tWishlist('empty')}</p>
                 <div className="text-center">
                     <Link href="/search" className="text-black font-medium underline hover:no-underline">
-                        Browse products
+                        {tCommon('browseProducts')}
                     </Link>
                 </div>
             </div>
@@ -52,8 +55,8 @@ export default async function WishlistPage() {
 
     return (
         <div className="container mx-auto max-w-6xl px-4 py-12 pt-[calc(var(--header-total-height)+3rem)]">
-            <h1 className="text-4xl font-bold mb-2">Wishlist</h1>
-            <p className="text-sm text-gray-500 mb-8">{products.length} saved item{products.length !== 1 ? 's' : ''}</p>
+            <h1 className="text-4xl font-bold mb-2">{tWishlist('title')}</h1>
+            <p className="text-sm text-gray-500 mb-8">{products.length} {products.length !== 1 ? tCommon('savedItems') : tCommon('savedItem')}</p>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                 {products.map((product) => (
                     <ProductCard key={product.itemId} product={product} isInWishlist={true} />

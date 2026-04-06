@@ -1,7 +1,8 @@
 // components/Header.tsx
 'use client';
 
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import HeaderClientComponents from './HeaderClientComponents';
 import MobileMenu from './MobileMenu';
 import { User } from '@/types';
@@ -24,6 +25,9 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
             }
         }, [isIntroFinished, user]);
 
+        const tHome = useTranslations('home');
+        const tCommon = useTranslations('common');
+
         return (
             <header className="fixed top-0 left-0 right-0 z-30 bg-white shadow-sm">
                 <AnimatePresence>
@@ -37,7 +41,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
                         >
                             <div className="h-[var(--banner-height)] flex items-center justify-center">
                                 <Link href="/auth/login" className="hover:underline text-sm">
-                                    Log in for a personalized experience
+                                    {tHome('loginBanner')}
                                 </Link>
                             </div>
                         </motion.div>
@@ -61,7 +65,7 @@ const Header = forwardRef<HTMLDivElement, HeaderProps>(
                                         className="text-4xl font-extrabold tracking-widest text-black leading-none"
                                         style={{ opacity: isIntroFinished ? 1 : 0 }}
                                     >
-                                        TEKU
+                                        {tCommon('brandName')}
                                     </h1>
                                 </div>
                             </Link>

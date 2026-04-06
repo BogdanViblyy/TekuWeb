@@ -2,15 +2,9 @@
 
 import { StatusHistoryEntry } from '@/types';
 
-const ALL_STATUSES = ['PLACED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
+import { useTranslations } from 'next-intl';
 
-const STATUS_LABELS: Record<string, string> = {
-    PLACED: 'Placed',
-    PROCESSING: 'Processing',
-    SHIPPED: 'Shipped',
-    DELIVERED: 'Delivered',
-    CANCELLED: 'Cancelled',
-};
+const ALL_STATUSES = ['PLACED', 'PROCESSING', 'SHIPPED', 'DELIVERED'];
 
 interface OrderStatusTimelineProps {
     currentStatus: string;
@@ -18,6 +12,7 @@ interface OrderStatusTimelineProps {
 }
 
 export default function OrderStatusTimeline({ currentStatus, history }: OrderStatusTimelineProps) {
+    const tStatus = useTranslations('orderStatus');
     const isCancelled = currentStatus === 'CANCELLED';
     const completedStatuses = new Set(history.map((h) => h.status));
     const currentIndex = ALL_STATUSES.indexOf(currentStatus);
@@ -32,7 +27,7 @@ export default function OrderStatusTimeline({ currentStatus, history }: OrderSta
                 <div className="flex items-center gap-3 mb-2">
                     <div className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center text-sm font-bold">✕</div>
                     <div>
-                        <p className="font-semibold text-red-800">Order Cancelled</p>
+                        <p className="font-semibold text-red-800">{tStatus('orderCancelled')}</p>
                         {cancelEntry && (
                             <p className="text-sm text-red-600">{new Date(cancelEntry.changedAt).toLocaleString()}</p>
                         )}
@@ -76,7 +71,7 @@ export default function OrderStatusTimeline({ currentStatus, history }: OrderSta
 
                         {/* Label */}
                         <p className={`mt-2 text-xs font-medium text-center ${isCurrent ? 'text-black font-semibold' : isFuture ? 'text-gray-400' : 'text-gray-700'}`}>
-                            {STATUS_LABELS[status] || status}
+                            {tStatus(status.toLowerCase() as any)}
                         </p>
 
                         {/* Timestamp */}

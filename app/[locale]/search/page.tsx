@@ -1,5 +1,6 @@
 // app/search/page.tsx
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { getTranslations } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { getCategoriesByAudience, searchProducts } from '@/lib/data';
 import { Suspense } from 'react';
@@ -16,19 +17,21 @@ const audiences = ['WOMEN', 'MEN', 'KIDS'];
 // Компонент результатов поиска
 async function SearchResults({ query }: { query: string }) {
     const results = await searchProducts(query);
+    const tSearch = await getTranslations('search');
+    const tCommon = await getTranslations('common');
 
     if (results.length === 0) {
         return (
             <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">No products found for &ldquo;{query}&rdquo;</p>
-                <p className="text-gray-400 mt-2">Try a different search term</p>
+                <p className="text-gray-500 text-lg">{tSearch('noResults')} &ldquo;{query}&rdquo;</p>
+                <p className="text-gray-400 mt-2">{tSearch('tryDifferent')}</p>
             </div>
         );
     }
 
     return (
         <div>
-            <p className="text-gray-500 mb-6">{results.length} result{results.length !== 1 ? 's' : ''} for &ldquo;{query}&rdquo;</p>
+            <p className="text-gray-500 mb-6">{results.length} {results.length !== 1 ? tCommon('items') : tCommon('item')} {tSearch('resultsFor')} &ldquo;{query}&rdquo;</p>
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
                 {results.map((product) => (
                     <ProductCard key={product.itemId} product={product} />
@@ -41,18 +44,20 @@ async function SearchResults({ query }: { query: string }) {
 // Выносим основное содержимое в отдельный компонент, чтобы использовать Suspense для категорий
 async function SearchContent({ selectedAudience }: { selectedAudience: string }) {
     const categories = await getCategoriesByAudience(selectedAudience);
+    const tSearch = await getTranslations('search');
+    const tNav = await getTranslations('nav');
+    const audienceStr = tNav(selectedAudience.toLowerCase() as any);
 
     return (
         <div className="mt-6">
             {categories.length > 0 ? (
                 <ul className="divide-y divide-gray-200">
-                    {/* Ссылка на все товары для выбранной аудитории */}
                     <li>
                         <Link
                             href={`/products/${selectedAudience.toLowerCase()}`}
                             className="flex items-center justify-between py-4 px-2 -mx-2 rounded-md hover:bg-gray-100 transition-colors"
                         >
-                            <span className="text-lg font-bold">All {selectedAudience.charAt(0) + selectedAudience.slice(1).toLowerCase()}</span>
+                            <span className="text-lg font-bold">{tSearch('allAudiences')} {audienceStr}</span>
                             <span className="text-gray-400">→</span>
                         </Link>
                     </li>
@@ -99,11 +104,14 @@ export default async function SearchPage({
     const resolvedSearchParams = searchParams ? await searchParams : {};
     const query = resolvedSearchParams?.q?.trim() || '';
 
+    const tSearch = await getTranslations('search');
+    const tNav = await getTranslations('nav');
+
     // If there's a text query, show search results
     if (query.length >= 2) {
         return (
             <div className="container mx-auto px-4 py-8 max-w-4xl">
-                <h1 className="text-4xl font-bold mb-6 text-gray-900">Search</h1>
+                <h1 className="text-4xl font-bold mb-6 text-gray-900">{tSearch('title')}</h1>
                 <Suspense fallback={<CategoriesSkeleton />}>
                     <SearchResults query={query} />
                 </Suspense>
@@ -118,7 +126,7 @@ export default async function SearchPage({
 
     return (
         <div className="container mx-auto px-4 py-8 max-w-2xl">
-            <h1 className="text-4xl font-bold mb-6 text-gray-900">Search</h1>
+            <h1 className="text-4xl font-bold mb-6 text-gray-900">{tSearch('title')}</h1>
 
             {/* Панель выбора аудитории */}
             <div className="border-b border-gray-200">
@@ -135,7 +143,7 @@ export default async function SearchPage({
                                 }
                             `}
                         >
-                            {audience.charAt(0) + audience.slice(1).toLowerCase()}
+                            {tNav(audience.toLowerCase() as any)}
                         </Link>
                     ))}
                 </nav>

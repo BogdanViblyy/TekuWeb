@@ -3,9 +3,11 @@
 import { useTransition } from 'react';
 import { updateItemQuantity, removeFromCart } from '@/app/actions';
 import { CartItem } from '@/types';
+import { useTranslations } from 'next-intl';
 
 export default function CartActions({ item }: { item: CartItem }) {
     let [isPending, startTransition] = useTransition();
+    const tCart = useTranslations('cart');
 
     const handleQuantityChange = (newQuantity: number) => {
         startTransition(() => {
@@ -43,7 +45,7 @@ export default function CartActions({ item }: { item: CartItem }) {
                 disabled={isPending}
                 className="text-red-500 hover:text-red-700 text-sm font-medium disabled:opacity-50"
             >
-                Remove
+                {tCart('remove')}
             </button>
         </div>
     );

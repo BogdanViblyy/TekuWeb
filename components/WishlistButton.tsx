@@ -7,6 +7,7 @@ import { HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 import { toggleWishlistItem } from '@/app/actions/wishlist';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
+import { useTranslations } from 'next-intl';
 
 interface WishlistButtonProps {
     itemId: number;
@@ -18,13 +19,14 @@ export default function WishlistButton({ itemId, isInWishlist, className = '' }:
     const [wishlisted, setWishlisted] = useState(isInWishlist);
     const [isPending, startTransition] = useTransition();
     const { user } = useAuth();
+    const tWishlist = useTranslations('wishlist');
 
     const handleToggle = (e: React.MouseEvent) => {
         e.preventDefault(); // Prevent Link click on ProductCard
         e.stopPropagation();
 
         if (!user) {
-            toast.error('Log in to save items to your wishlist.');
+            toast.error(tWishlist('loginRequired'));
             return;
         }
 
@@ -32,9 +34,9 @@ export default function WishlistButton({ itemId, isInWishlist, className = '' }:
             try {
                 const result = await toggleWishlistItem(itemId);
                 setWishlisted(result.added);
-                toast.success(result.added ? 'Added to wishlist!' : 'Removed from wishlist.');
+                toast.success(result.added ? tWishlist('addedToast') : tWishlist('removedToast'));
             } catch {
-                toast.error('Something went wrong.');
+                toast.error(tWishlist('error'));
             }
         });
     };
