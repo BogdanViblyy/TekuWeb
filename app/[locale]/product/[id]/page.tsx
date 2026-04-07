@@ -2,6 +2,7 @@
 import type { Metadata } from 'next';
 import AddToCartButton from '@/components/AddToCartButton';
 import ImageGallery from '@/components/ImageGallery';
+import RecentlyViewed from '@/components/RecentlyViewed';
 import { getProductDetails } from '@/lib/data';
 import { notFound } from 'next/navigation';
 
@@ -58,6 +59,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     <AddToCartButton product={product} />
                 </div>
             </div>
+            <RecentlyViewed currentProductId={product.itemId} />
         </div>
     );
 }

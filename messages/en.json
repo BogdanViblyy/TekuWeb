@@ -11,7 +11,8 @@
         "items": "items",
         "item": "item",
         "savedItems": "saved items",
-        "savedItem": "saved item"
+        "savedItem": "saved item",
+        "recentlyViewed": "Recently Viewed"
     },
     "nav": {
         "women": "Women",

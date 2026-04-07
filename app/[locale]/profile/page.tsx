@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Link } from '@/i18n/navigation';
 import { logout } from '@/app/actions';
 import { getTranslations } from 'next-intl/server';
+import RecentlyViewed from '@/components/RecentlyViewed';
 
 export default async function ProfilePage() {
     const user = await getSession();
@@ -58,6 +59,7 @@ export default async function ProfilePage() {
                     </div>
                 </div>
             </div>
+            <RecentlyViewed />
         </div>
     );
 }

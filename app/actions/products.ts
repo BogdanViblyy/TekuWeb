@@ -20,3 +20,9 @@ export async function loadMoreProducts(
     const result = await getProducts(audience, filters, page);
     return result;
 }
+
+export async function fetchRecentlyViewedProducts(ids: number[]): Promise<Product[]> {
+    const { getProductsByIds } = await import('@/lib/data');
+    return getProductsByIds(ids);
+}
+

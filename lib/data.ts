@@ -443,3 +443,30 @@ export async function getProductsByColor(colorId: number): Promise<{ color: { co
         })),
     };
 }
+
+export async function getProductsByIds(ids: number[]): Promise<Product[]> {
+    if (!ids || ids.length === 0) return [];
+
+    const items = await prisma.shop_items.findMany({
+        where: { item_id: { in: ids } },
+        include: { brands: true, categories: true },
+    });
+
+    // To maintain the order of the ids array:
+    const itemMap = new Map();
+    items.forEach(item => {
+        itemMap.set(item.item_id, {
+            itemId: item.item_id,
+            name: item.item_name || 'No Name',
+            brandName: item.brands?.brand_name || null,
+            description: item.item_description,
+            price: (item.item_price as unknown as Decimal).toNumber(),
+            discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
+            imageURL: formatImageUrl(item.item_image),
+            productCategoryName: item.categories?.category_name || 'Uncategorized',
+        });
+    });
+
+    return ids.map(id => itemMap.get(id)).filter(Boolean) as Product[];
+}
+

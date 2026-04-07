@@ -6,6 +6,7 @@ import { getCart } from '@/app/actions';
 import CartActions from '@/components/CartActions';
 import CheckoutButton from '@/components/CheckoutButton';
 import { getDefaultImageUrl } from '@/lib/utils';
+import RecentlyViewed from '@/components/RecentlyViewed';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,12 +16,15 @@ export default async function CartPage() {
 
     if (!cartItems || cartItems.length === 0) {
         return (
-            <div className="container mx-auto px-4 py-12 text-center">
-                <h1 className="text-4xl font-bold mb-4">{tCart('title')}</h1>
-                <p className="text-gray-600 mb-8">{tCart('empty')}</p>
-                <Link href="/search" className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition">
-                    Continue Shopping
-                </Link>
+            <div className="container mx-auto px-4 py-8">
+                <div className="py-12 text-center">
+                    <h1 className="text-4xl font-bold mb-4">{tCart('title')}</h1>
+                    <p className="text-gray-600 mb-8">{tCart('empty')}</p>
+                    <Link href="/search" className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition">
+                        Continue Shopping
+                    </Link>
+                </div>
+                <RecentlyViewed />
             </div>
         );
     }
@@ -76,6 +80,7 @@ export default async function CartPage() {
                     </div>
                 </div>
             </div>
+            <RecentlyViewed />
         </div>
     );
 }

@@ -5,5 +5,5 @@
 export { getSession, register, login, logout } from './actions/auth';
 export { getCart, addToCart, updateItemQuantity, removeFromCart } from './actions/cart';
 export { placeOrder } from './actions/order';
-export { loadMoreProducts } from './actions/products';
+export { loadMoreProducts, fetchRecentlyViewedProducts } from './actions/products';
 export { getWishlist, toggleWishlistItem } from './actions/wishlist';
