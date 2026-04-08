@@ -26,7 +26,7 @@ export default function LoginPage() {
   // Redirect is now handled inside the server action itself, so useEffect is not needed here.
 
   return (
-    <div className="flex items-center justify-center min-h-screen-minus-header bg-gray-50">
+    <div className="flex items-center justify-center min-h-screen pt-[var(--header-total-height)] pb-12 bg-gray-50">
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <h1 className="text-3xl font-bold text-center">{tAuth('loginTitle')}</h1>
         <form action={formAction} className="space-y-6">
