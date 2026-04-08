@@ -28,11 +28,11 @@ export async function toggleWishlistItem(itemId: number): Promise<{ added: boole
 
     if (existing) {
         await prisma.wishlist.delete({ where: { id: existing.id } });
-        revalidatePath('/profile/wishlist');
+        revalidatePath('/wishlist');
         return { added: false };
     } else {
         await prisma.wishlist.create({ data: { user_id: user.id, item_id: itemId } });
-        revalidatePath('/profile/wishlist');
+        revalidatePath('/wishlist');
         return { added: true };
     }
 }

@@ -107,6 +107,14 @@ export default function MobileMenu() {
                                 ))}
 
                                 <Link
+                                    href="/wishlist"
+                                    onClick={() => setIsOpen(false)}
+                                    className="block px-4 py-3 text-lg text-gray-900 hover:bg-gray-50 transition"
+                                >
+                                    {tNav('wishlist')}
+                                </Link>
+
+                                <Link
                                     href="/cart"
                                     onClick={() => setIsOpen(false)}
                                     className="block px-4 py-3 text-lg text-gray-900 hover:bg-gray-50 transition"

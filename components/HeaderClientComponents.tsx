@@ -2,7 +2,7 @@
 'use client';
 
 import { Link } from '@/i18n/navigation';
-import { ShoppingBagIcon, UserIcon } from '@heroicons/react/24/outline';
+import { ShoppingBagIcon, UserIcon, HeartIcon } from '@heroicons/react/24/outline';
 import { useCart } from '@/context/CartContext';
 import Search from './Search'; // Мы создадим этот компонент следующим
 
@@ -13,6 +13,17 @@ export default function HeaderClientComponents() {
     <div className="flex flex-1 items-center justify-end space-x-6">
       {/* Search Component */}
       <Search />
+      
+      {/* Wishlist Icon */}
+      <div className="flow-root">
+        <Link href="/wishlist" className="group -m-2 flex items-center p-2 relative">
+          <HeartIcon
+            className="h-6 w-6 flex-shrink-0 text-gray-400 group-hover:text-gray-500"
+            aria-hidden="true"
+          />
+          <span className="sr-only">view wishlist</span>
+        </Link>
+      </div>
       
       {/* Cart Icon with Badge */}
       <div className="flow-root">
