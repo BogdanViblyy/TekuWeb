@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import { getProducts, getAvailableFilters } from '@/lib/data';
 import ProductFilters from '@/components/ProductFilters';
 import ProductList from '@/components/ProductList';
+import SortSelect from '@/components/SortSelect';
 
 export const dynamic = 'force-dynamic';
 
@@ -46,25 +47,47 @@ export default async function ProductsPage({
 
   const categoryName = categorySlug ? categorySlug.replace(/-/g, ' ') : undefined;
 
+  const parseArray = (val: string | string[] | undefined): string[] | undefined => {
+      if (!val) return undefined;
+      return Array.isArray(val) ? val : [val];
+  };
+
+  const minPriceParam = resolvedSearchParams?.minPrice as string;
+  const maxPriceParam = resolvedSearchParams?.maxPrice as string;
+  const minPrice = minPriceParam ? parseFloat(minPriceParam) : undefined;
+  const maxPrice = maxPriceParam ? parseFloat(maxPriceParam) : undefined;
+  
+  const sort = resolvedSearchParams?.sort as string | undefined;
+
   const filters = {
     categoryName,
-    size: resolvedSearchParams?.size as string,
-    brand: resolvedSearchParams?.brand as string,
-    material: resolvedSearchParams?.material as string,
-    color: resolvedSearchParams?.color as string,
+    size: parseArray(resolvedSearchParams?.size),
+    brand: parseArray(resolvedSearchParams?.brand),
+    material: parseArray(resolvedSearchParams?.material),
+    color: parseArray(resolvedSearchParams?.color),
+    minPrice,
+    maxPrice,
+    onSale: resolvedSearchParams?.onSale === 'true',
+    inStock: resolvedSearchParams?.inStock === 'true'
   }
 
   // Загружаем только первую страницу товаров и фильтры
   const [{ products: initialProducts, hasMore }, availableFilters] = await Promise.all([
-    getProducts(audience.toUpperCase(), filters, 1),
+    getProducts(audience.toUpperCase(), filters, 1, sort),
     getAvailableFilters(audience.toUpperCase(), categoryName)
   ]);
 
+  // Need to import SortSelect at the top!
   return (
     <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold capitalize">{categoryName || `All ${audience}`}</h1>
-        <p className="text-gray-500">{initialProducts.length > 0 ? 'Showing results...' : 'No products found'}</p>
+      <div className="mb-8 flex flex-col md:flex-row justify-between md:items-end space-y-4 md:space-y-0">
+        <div>
+           <h1 className="text-4xl font-bold capitalize">{categoryName || `All ${audience}`}</h1>
+           <p className="text-gray-500">{initialProducts.length > 0 ? 'Showing results...' : 'No products found'}</p>
+        </div>
+        
+        {/* Sort Select */}
+        {initialProducts.length > 0 && <SortSelect />}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -78,6 +101,7 @@ export default async function ProductsPage({
               initialHasMore={hasMore}
               audience={audience.toUpperCase()}
               filters={filters}
+              sort={sort}
             />
           ) : (
             <div className="text-center py-20">

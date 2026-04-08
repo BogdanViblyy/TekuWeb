@@ -88,7 +88,11 @@
         "orderStatus": "Status",
         "orderTotal": "Order Total",
         "orderDetails": "Order Details",
-        "orderItems": "Items in this order"
+        "orderItems": "Items in this order",
+        "languageAndRegion": "Language and region",
+        "english": "English (United kingdom)",
+        "russian": "Russian (Russia)",
+        "language": "Language"
     },
     "wishlist": {
         "title": "Wishlist",

@@ -88,7 +88,11 @@
         "orderStatus": "Статус",
         "orderTotal": "Сумма заказа",
         "orderDetails": "Детали заказа",
-        "orderItems": "Товары в заказе"
+        "orderItems": "Товары в заказе",
+        "languageAndRegion": "Язык и регион",
+        "english": "Английский (Великобритания)",
+        "russian": "Русский (Россия)",
+        "language": "Язык"
     },
     "wishlist": {
         "title": "Избранное",

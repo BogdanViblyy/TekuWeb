@@ -6,6 +6,7 @@ import { Link } from '@/i18n/navigation';
 import { logout } from '@/app/actions';
 import { getTranslations } from 'next-intl/server';
 import RecentlyViewed from '@/components/RecentlyViewed';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default async function ProfilePage() {
     const user = await getSession();
@@ -51,6 +52,7 @@ export default async function ProfilePage() {
                     <div className="space-y-4">
                         <p>Manage your account details and preferences here.</p>
                         {/* More settings can be added here */}
+                        <LanguageSwitcher />
                         <form action={logout}>
                             <button type="submit" className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition">
                                 {tProfile('logoutButton')}

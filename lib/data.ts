@@ -47,12 +47,17 @@ export async function getProducts(
     // FIX: Принимаем объект с фильтрами для чистоты
     filters: {
         categoryName?: string,
-        size?: string,
-        brand?: string,
-        material?: string,
-        color?: string
+        size?: string[],
+        brand?: string[],
+        material?: string[],
+        color?: string[],
+        minPrice?: number,
+        maxPrice?: number,
+        onSale?: boolean,
+        inStock?: boolean
     },
-    page: number = 1
+    page: number = 1,
+    sort?: string
 ): Promise<{ products: Product[], hasMore: boolean }> {
     if (!audience) return { products: [], hasMore: false };
 
@@ -69,10 +74,56 @@ export async function getProducts(
     if (filters.categoryName) {
         (where.categories as Record<string, unknown>).category_name = filters.categoryName;
     }
-    if (filters.brand) where.brands = { brand_name: filters.brand };
-    if (filters.material) where.materials = { material_name: filters.material };
-    if (filters.size) where.products = { some: { sizes: { size_name: filters.size } } };
-    if (filters.color) where.products = { some: { colors: { color_name: filters.color } } };
+    if (filters.brand && filters.brand.length > 0) where.brands = { brand_name: { in: filters.brand } };
+    if (filters.material && filters.material.length > 0) where.materials = { material_name: { in: filters.material } };
+    
+    const andClauses: Prisma.shop_itemsWhereInput[] = [];
+
+    if (filters.size && filters.size.length > 0) {
+        andClauses.push({ products: { some: { sizes: { size_name: { in: filters.size } } } } });
+    }
+    if (filters.color && filters.color.length > 0) {
+        andClauses.push({ products: { some: { colors: { color_name: { in: filters.color } } } } });
+    }
+    if (filters.inStock) {
+        andClauses.push({ products: { some: { product_quantity: { gt: 0 } } } });
+    }
+
+    if (andClauses.length > 0) {
+        where.AND = andClauses;
+    }
+
+    if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+        where.item_price = {};
+        if (filters.minPrice !== undefined) (where.item_price as any).gte = filters.minPrice;
+        if (filters.maxPrice !== undefined) (where.item_price as any).lte = filters.maxPrice;
+    }
+
+    if (filters.onSale) {
+        where.item_discount = { gt: 0 };
+    }
+
+    let orderByCondition: Prisma.shop_itemsOrderByWithRelationInput = { item_id: 'asc' };
+    
+    if (sort) {
+        switch (sort) {
+            case 'price_asc':
+                orderByCondition = { item_price: 'asc' };
+                break;
+            case 'price_desc':
+                orderByCondition = { item_price: 'desc' };
+                break;
+            case 'name_asc':
+                orderByCondition = { item_name: 'asc' };
+                break;
+            case 'name_desc':
+                orderByCondition = { item_name: 'desc' };
+                break;
+            case 'newest':
+                orderByCondition = { item_id: 'desc' };
+                break;
+        }
+    }
 
     const items = await prisma.shop_items.findMany({
         where,
@@ -82,7 +133,7 @@ export async function getProducts(
             brands: true,
             categories: true,
         },
-        orderBy: { item_id: 'asc' }
+        orderBy: orderByCondition
     });
 
     const hasMore = items.length > PRODUCTS_PER_PAGE;
@@ -290,18 +341,26 @@ export const getAvailableFilters = cache(
 
         if (relevantShopItems.length === 0) {
             const categories = await getCategoriesByAudience(audience);
-            return { categories, sizes: [], brands: [], materials: [], colors: [] };
+            return { categories, sizes: [], brands: [], materials: [], colors: [], minPrice: 0, maxPrice: 1000 };
         }
 
         const relevantItemIds = relevantShopItems.map((item) => item.item_id);
 
-        const [brands, sizes, materials, colors, categories] = await Promise.all([
+        const [brands, sizes, materials, colors, categories, priceStats] = await Promise.all([
             prisma.brands.findMany({ where: { shop_items: { some: { item_id: { in: relevantItemIds } } } }, select: { brand_name: true }, orderBy: { brand_name: 'asc' } }),
             prisma.sizes.findMany({ where: { products: { some: { item_id: { in: relevantItemIds } } } }, select: { size_name: true }, orderBy: { size_id: 'asc' } }),
             prisma.materials.findMany({ where: { shop_items: { some: { item_id: { in: relevantItemIds } } } }, select: { material_name: true }, orderBy: { material_name: 'asc' } }),
             prisma.colors.findMany({ where: { products: { some: { item_id: { in: relevantItemIds } } } }, select: { color_name: true, color_rgb: true }, orderBy: { color_name: 'asc' } }),
             getCategoriesByAudience(audience),
+            prisma.shop_items.aggregate({
+                where: baseWhere,
+                _min: { item_price: true },
+                _max: { item_price: true }
+            })
         ]);
+
+        const minPrice = priceStats._min.item_price ? (priceStats._min.item_price as unknown as Decimal).toNumber() : 0;
+        const maxPrice = priceStats._max.item_price ? (priceStats._max.item_price as unknown as Decimal).toNumber() : 1000;
 
         return {
             categories,
@@ -309,6 +368,8 @@ export const getAvailableFilters = cache(
             sizes: sizes.map((s) => s.size_name).filter(Boolean) as string[],
             materials: materials.map((m) => m.material_name).filter(Boolean) as string[],
             colors: colors.map((c) => ({ name: c.color_name || '', rgb: c.color_rgb })).filter((c) => c.name),
+            minPrice,
+            maxPrice
         };
     },
     ['available_filters'],

@@ -10,14 +10,19 @@ export async function loadMoreProducts(
     audience: string,
     filters: {
         categoryName?: string;
-        size?: string;
-        brand?: string;
-        material?: string;
-        color?: string;
+        size?: string[];
+        brand?: string[];
+        material?: string[];
+        color?: string[];
+        minPrice?: number;
+        maxPrice?: number;
+        onSale?: boolean;
+        inStock?: boolean;
     },
-    page: number
+    page: number,
+    sort?: string
 ): Promise<{ products: Product[]; hasMore: boolean }> {
-    const result = await getProducts(audience, filters, page);
+    const result = await getProducts(audience, filters, page, sort);
     return result;
 }
 

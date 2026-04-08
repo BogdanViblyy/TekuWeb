@@ -14,14 +14,19 @@ interface ProductListProps {
   audience: string;
   filters: {
     categoryName?: string;
-    size?: string;
-    brand?: string;
-    material?: string;
-    color?: string;
+    size?: string[];
+    brand?: string[];
+    material?: string[];
+    color?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    onSale?: boolean;
+    inStock?: boolean;
   };
+  sort?: string;
 }
 
-export default function ProductList({ initialProducts, initialHasMore, audience, filters }: ProductListProps) {
+export default function ProductList({ initialProducts, initialHasMore, audience, filters, sort }: ProductListProps) {
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [page, setPage] = useState(2);
@@ -35,7 +40,7 @@ export default function ProductList({ initialProducts, initialHasMore, audience,
     // Запускаем подгрузку, только если нет уже идущего запроса
     if (inView && hasMore && !isPending) {
       startTransition(() => {
-        loadMoreProducts(audience, filters, page).then(res => {
+        loadMoreProducts(audience, filters, page, sort).then(res => {
           if (res.products.length > 0) {
             setProducts(prev => [...prev, ...res.products]);
             setPage(prev => prev + 1);
@@ -46,7 +51,7 @@ export default function ProductList({ initialProducts, initialHasMore, audience,
         });
       });
     }
-  }, [inView, hasMore, isPending, page, audience, filters]);
+  }, [inView, hasMore, isPending, page, audience, filters, sort]);
 
   // При смене фильтров сбрасываем состояние
   useEffect(() => {

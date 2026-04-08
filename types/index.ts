@@ -50,6 +50,8 @@ export interface FilterOptions {
     brands: string[];
     materials: string[];
     colors: ColorFilter[];
+    minPrice: number;
+    maxPrice: number;
 }
 
 export interface UserOrderSummary {
