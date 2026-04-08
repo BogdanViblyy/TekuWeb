@@ -11,7 +11,7 @@ export default async function AboutPage() {
     const tCommon = await getTranslations('common');
 
     return (
-        <div className="container mx-auto max-w-2xl px-4 py-12">
+        <div className="container mx-auto max-w-2xl px-4 py-12 pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-4xl font-bold mb-6">{tAbout('title')}</h1>
             <p className="text-gray-600 leading-relaxed mb-4">
                 {tAbout('description')}

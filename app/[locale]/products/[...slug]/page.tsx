@@ -61,7 +61,7 @@ export default async function ProductsPage({
   ]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
       <div className="mb-8">
         <h1 className="text-4xl font-bold capitalize">{categoryName || `All ${audience}`}</h1>
         <p className="text-gray-500">{initialProducts.length > 0 ? 'Showing results...' : 'No products found'}</p>

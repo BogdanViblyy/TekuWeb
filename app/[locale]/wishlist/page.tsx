@@ -13,7 +13,7 @@ export default async function WishlistPage() {
 
     if (!wishlistIds || wishlistIds.length === 0) {
         return (
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
                 <div className="py-12 text-center">
                     <h1 className="text-4xl font-bold mb-4">{tWishlist('title')}</h1>
                     <p className="text-gray-600 mb-8">{tWishlist('empty')}</p>
@@ -29,7 +29,7 @@ export default async function WishlistPage() {
     const items = await getProductsByIds(wishlistIds);
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-3xl font-bold mb-6">{tWishlist('title')} ({items.length})</h1>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {items.map(product => (

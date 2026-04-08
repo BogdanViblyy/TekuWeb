@@ -34,7 +34,7 @@ export default async function OrderHistoryPage() {
     const tProfile = await getTranslations('profile');
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-4xl font-bold mb-6">{tProfile('yourOrders')}</h1>
             {orders.length > 0 ? (
                 <div className="space-y-4">

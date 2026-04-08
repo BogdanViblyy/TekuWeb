@@ -110,7 +110,7 @@ export default async function SearchPage({
     // If there's a text query, show search results
     if (query.length >= 2) {
         return (
-            <div className="container mx-auto px-4 py-8 max-w-4xl">
+            <div className="container mx-auto px-4 py-8 max-w-4xl pt-[calc(var(--header-total-height)+3rem)]">
                 <h1 className="text-4xl font-bold mb-6 text-gray-900">{tSearch('title')}</h1>
                 <Suspense fallback={<CategoriesSkeleton />}>
                     <SearchResults query={query} />
@@ -125,7 +125,7 @@ export default async function SearchPage({
         : 'WOMEN';
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-2xl">
+        <div className="container mx-auto px-4 py-8 max-w-2xl pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-4xl font-bold mb-6 text-gray-900">{tSearch('title')}</h1>
 
             {/* Панель выбора аудитории */}

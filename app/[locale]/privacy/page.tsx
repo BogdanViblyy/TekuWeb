@@ -11,7 +11,7 @@ export default async function PrivacyPage() {
     const tCommon = await getTranslations('common');
 
     return (
-        <div className="container mx-auto max-w-2xl px-4 py-12">
+        <div className="container mx-auto max-w-2xl px-4 py-12 pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-4xl font-bold mb-2">{tPrivacy('title')}</h1>
             <p className="text-sm text-gray-400 mb-6">{tPrivacy('lastUpdated')}</p>
             <div className="prose prose-gray max-w-none">

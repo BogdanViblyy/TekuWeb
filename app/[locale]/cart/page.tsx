@@ -16,7 +16,7 @@ export default async function CartPage() {
 
     if (!cartItems || cartItems.length === 0) {
         return (
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
                 <div className="py-12 text-center">
                     <h1 className="text-4xl font-bold mb-4">{tCart('title')}</h1>
                     <p className="text-gray-600 mb-8">{tCart('empty')}</p>
@@ -37,7 +37,7 @@ export default async function CartPage() {
     const totalItems = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-3xl font-bold mb-6">{tCart('title')} ({totalItems})</h1>
             <div className="grid lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-4">

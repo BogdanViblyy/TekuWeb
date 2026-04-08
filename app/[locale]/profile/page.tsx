@@ -19,7 +19,7 @@ export default async function ProfilePage() {
     const tProfile = await getTranslations('profile');
 
     return (
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-4xl font-bold mb-2">{tProfile('welcome')}, {user.name}!</h1>
             <p className="text-gray-600 mb-8">{user.email}</p>
 
