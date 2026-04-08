@@ -86,7 +86,7 @@ function ColorFilterComponent({ title, options, filterKey }: { title: string, op
   return (
     <div className="py-4 border-b">
       <h3 className="font-semibold mb-3">{title}</h3>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2 py-1 pl-1">
         {options.map(option => {
           const isSelected = currentValues.includes(option.name);
           return (
@@ -146,10 +146,10 @@ function ToggleFilter({ title, filterKey }: { title: string, filterKey: string }
 
 export default function ProductFilters({ filters }: { filters: FilterOptions }) {
   return (
-    <div className="sticky top-[calc(var(--header-total-height)+2rem)]">
+    <div>
       <h2 className="text-xl font-bold mb-4">Filters</h2>
       
-      {(filters.minPrice !== undefined && filters.maxPrice !== undefined && filters.maxPrice > filters.minPrice) && (
+      {(filters.minPrice !== undefined && filters.maxPrice !== undefined && filters.maxPrice >= filters.minPrice) && (
         <PriceSlider min={filters.minPrice} max={filters.maxPrice} />
       )}
 

@@ -23,7 +23,10 @@ export async function loadMoreProducts(
     sort?: string
 ): Promise<{ products: Product[]; hasMore: boolean }> {
     const result = await getProducts(audience, filters, page, sort);
-    return result;
+    return {
+        products: result.products,
+        hasMore: result.hasMore
+    };
 }
 
 export async function fetchRecentlyViewedProducts(ids: number[]): Promise<Product[]> {

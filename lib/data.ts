@@ -58,8 +58,8 @@ export async function getProducts(
     },
     page: number = 1,
     sort?: string
-): Promise<{ products: Product[], hasMore: boolean }> {
-    if (!audience) return { products: [], hasMore: false };
+): Promise<{ products: Product[], hasMore: boolean, filteredMinPrice: number, filteredMaxPrice: number }> {
+    if (!audience) return { products: [], hasMore: false, filteredMinPrice: 0, filteredMaxPrice: 0 };
 
     const where: Prisma.shop_itemsWhereInput = {
         categories: {
@@ -93,14 +93,20 @@ export async function getProducts(
         where.AND = andClauses;
     }
 
+    if (filters.onSale) {
+        where.item_discount = { gt: 0 };
+    }
+
+    // Capture the where clause BEFORE adding price filters to calculate contextual bounds.
+    const aggregateWhere = { ...where };
+    // Need to deep clone object to prevent mutating if it has references, but 'where' here is freshly constructed.
+    // However, Prisma doesn't mind if we serialize and deserialize.
+    const aggregateWhereClone = JSON.parse(JSON.stringify(where));
+
     if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
         where.item_price = {};
         if (filters.minPrice !== undefined) (where.item_price as any).gte = filters.minPrice;
         if (filters.maxPrice !== undefined) (where.item_price as any).lte = filters.maxPrice;
-    }
-
-    if (filters.onSale) {
-        where.item_discount = { gt: 0 };
     }
 
     let orderByCondition: Prisma.shop_itemsOrderByWithRelationInput = { item_id: 'asc' };
@@ -125,16 +131,63 @@ export async function getProducts(
         }
     }
 
-    const items = await prisma.shop_items.findMany({
-        where,
-        skip: (page - 1) * PRODUCTS_PER_PAGE,
-        take: PRODUCTS_PER_PAGE + 1,
-        include: {
-            brands: true,
-            categories: true,
-        },
-        orderBy: orderByCondition
-    });
+    // Build a raw SQL WHERE clause equivalent to aggregateWhereClone so we can
+    // compute MIN/MAX of (item_price - COALESCE(item_discount, 0)) — the effective price.
+    // We re-derive the conditions from the filter state rather than parsing the Prisma object.
+    const effectivePriceSql = Prisma.sql`(item_price - COALESCE(item_discount, 0))`;
+
+    // Build raw SQL conditions matching the aggregateWhereClone filters
+    const sqlConditions: Prisma.Sql[] = [
+        Prisma.sql`(
+            category_id IN (
+                SELECT category_id FROM categories
+                WHERE audience = ${audience.toUpperCase()}
+                   OR audience = 'UNISEX'
+                   OR audience IS NULL
+                ${filters.categoryName ? Prisma.sql`AND category_name = ${filters.categoryName}` : Prisma.empty}
+            )
+        )`
+    ];
+    if (filters.brand && filters.brand.length > 0) {
+        sqlConditions.push(Prisma.sql`brand_id IN (SELECT brand_id FROM brands WHERE brand_name IN (${Prisma.join(filters.brand)}))`);
+    }
+    if (filters.material && filters.material.length > 0) {
+        sqlConditions.push(Prisma.sql`material_id IN (SELECT material_id FROM materials WHERE material_name IN (${Prisma.join(filters.material)}))`);
+    }
+    if (filters.size && filters.size.length > 0) {
+        sqlConditions.push(Prisma.sql`item_id IN (SELECT item_id FROM products p JOIN sizes s ON p.size_id = s.size_id WHERE s.size_name IN (${Prisma.join(filters.size)}))`);
+    }
+    if (filters.color && filters.color.length > 0) {
+        sqlConditions.push(Prisma.sql`item_id IN (SELECT item_id FROM products p JOIN colors c ON p.color_id = c.color_id WHERE c.color_name IN (${Prisma.join(filters.color)}))`);
+    }
+    if (filters.inStock) {
+        sqlConditions.push(Prisma.sql`item_id IN (SELECT item_id FROM products WHERE product_quantity > 0)`);
+    }
+    if (filters.onSale) {
+        sqlConditions.push(Prisma.sql`item_discount > 0`);
+    }
+
+    const whereRaw = sqlConditions.reduce((acc, cond) => Prisma.sql`${acc} AND ${cond}`);
+
+    const [items, priceStatsRaw] = await Promise.all([
+        prisma.shop_items.findMany({
+            where,
+            skip: (page - 1) * PRODUCTS_PER_PAGE,
+            take: PRODUCTS_PER_PAGE + 1,
+            include: {
+                brands: true,
+                categories: true,
+            },
+            orderBy: orderByCondition
+        }),
+        prisma.$queryRaw<[{ min_eff: number | null; max_eff: number | null }]>`
+            SELECT
+                MIN(${effectivePriceSql}) AS min_eff,
+                MAX(${effectivePriceSql}) AS max_eff
+            FROM shop_items
+            WHERE ${whereRaw}
+        `
+    ]);
 
     const hasMore = items.length > PRODUCTS_PER_PAGE;
     const products = items.slice(0, PRODUCTS_PER_PAGE);
@@ -150,7 +203,9 @@ export async function getProducts(
             imageURL: item.item_image ? `/images/${item.item_image}` : null,
             productCategoryName: item.categories?.category_name || 'Uncategorized',
         })),
-        hasMore
+        hasMore,
+        filteredMinPrice: priceStatsRaw[0]?.min_eff ? Number(priceStatsRaw[0].min_eff) : 0,
+        filteredMaxPrice: priceStatsRaw[0]?.max_eff ? Number(priceStatsRaw[0].max_eff) : 0
     };
 }
 

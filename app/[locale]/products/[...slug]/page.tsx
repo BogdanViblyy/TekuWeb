@@ -5,6 +5,7 @@ import { getProducts, getAvailableFilters } from '@/lib/data';
 import ProductFilters from '@/components/ProductFilters';
 import ProductList from '@/components/ProductList';
 import SortSelect from '@/components/SortSelect';
+import ProductsGrid from '@/components/ProductsGrid';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,10 +73,14 @@ export default async function ProductsPage({
   }
 
   // Загружаем только первую страницу товаров и фильтры
-  const [{ products: initialProducts, hasMore }, availableFilters] = await Promise.all([
+  const [{ products: initialProducts, hasMore, filteredMinPrice, filteredMaxPrice }, availableFilters] = await Promise.all([
     getProducts(audience.toUpperCase(), filters, 1, sort),
     getAvailableFilters(audience.toUpperCase(), categoryName)
   ]);
+
+  // Use contextual filtered min/max price for the slider boundaries
+  availableFilters.minPrice = filteredMinPrice;
+  availableFilters.maxPrice = filteredMaxPrice;
 
   // Need to import SortSelect at the top!
   return (
@@ -90,11 +95,9 @@ export default async function ProductsPage({
         {initialProducts.length > 0 && <SortSelect />}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <aside className="md:col-span-1">
-          <ProductFilters filters={availableFilters} />
-        </aside>
-        <main className="md:col-span-3">
+      <ProductsGrid>
+        <ProductFilters filters={availableFilters} />
+        <div>
           {initialProducts.length > 0 ? (
             <ProductList
               initialProducts={initialProducts}
@@ -108,8 +111,8 @@ export default async function ProductsPage({
               <p className="text-xl text-gray-600">No products found matching your criteria.</p>
             </div>
           )}
-        </main>
-      </div>
+        </div>
+      </ProductsGrid>
     </div>
   );
 }
