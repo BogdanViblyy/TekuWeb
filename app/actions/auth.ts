@@ -21,7 +21,7 @@ export async function getSession(): Promise<User | null> {
     try {
         const { payload } = await jwtVerify(token, secret);
         if (typeof payload.id === 'number' && typeof payload.name === 'string' && typeof payload.email === 'string') {
-            return { id: payload.id, name: payload.name, email: payload.email };
+            return { id: payload.id, name: payload.name, email: payload.email, role: (payload.role as string) || 'USER' };
         }
         return null;
     } catch (e) {
@@ -74,7 +74,7 @@ export async function register(prevState: any, formData: FormData) {
         }
     });
 
-    const userPayload: User = { id: newUser.user_id, name: newUser.user_name || '', email: newUser.user_email || '' };
+    const userPayload: User = { id: newUser.user_id, name: newUser.user_name || '', email: newUser.user_email || '', role: newUser.user_role || 'USER' };
     await createSession(userPayload);
 
     redirect('/profile');
@@ -101,7 +101,7 @@ export async function login(prevState: any, formData: FormData) {
         return { success: false, message: 'Invalid credentials.' };
     }
 
-    const userPayload: User = { id: user.user_id, name: user.user_name || '', email: user.user_email || '' };
+    const userPayload: User = { id: user.user_id, name: user.user_name || '', email: user.user_email || '', role: user.user_role || 'USER' };
     await createSession(userPayload);
 
     redirect('/profile');

@@ -4,12 +4,10 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { routing } from '@/i18n/routing';
-import Footer from '@/components/Footer';
-import LayoutHeader from '@/components/LayoutHeader';
-import { Toaster } from 'react-hot-toast';
 import '@/styles/globals.css';
 import { getSession, getCart } from '@/app/actions';
 import { Providers } from '@/context/Providers';
+import StorefrontShell from '@/components/StorefrontShell';
 
 const inter = Inter({ subsets: ['latin', 'cyrillic'] });
 
@@ -48,14 +46,9 @@ export default async function LocaleLayout({
             <body className={`${inter.className} ${bodyClass} bg-white text-black`}>
                 <NextIntlClientProvider messages={messages}>
                     <Providers user={user} cart={cartItems}>
-                        <div className="flex flex-col min-h-screen">
-                            <Toaster />
-                            <LayoutHeader />
-                            <main className="flex-grow">
-                                {children}
-                            </main>
-                            <Footer />
-                        </div>
+                        <StorefrontShell>
+                            {children}
+                        </StorefrontShell>
                     </Providers>
                 </NextIntlClientProvider>
             </body>

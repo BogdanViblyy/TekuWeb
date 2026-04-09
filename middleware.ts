@@ -13,6 +13,9 @@ const protectedPaths = ['/profile', '/profile/orders', '/profile/wishlist'];
 // Routes that should redirect home if already authenticated
 const authPaths = ['/auth/login', '/auth/register'];
 
+// Routes that require ADMIN role
+const adminPaths = ['/admin'];
+
 function getJwtSecret(): Uint8Array {
     const secret = process.env.JWT_SECRET;
     if (!secret) {
@@ -31,6 +34,22 @@ async function isAuthenticated(request: NextRequest): Promise<boolean> {
         return true;
     } catch {
         return false;
+    }
+}
+
+async function getTokenPayload(request: NextRequest): Promise<{ authenticated: boolean; role?: string }> {
+    const token = request.cookies.get('session_token')?.value;
+    if (!token) return { authenticated: false };
+
+    try {
+        const secret = getJwtSecret();
+        const { payload } = await jwtVerify(token, secret);
+        return {
+            authenticated: true,
+            role: (payload.role as string) || 'USER',
+        };
+    } catch {
+        return { authenticated: false };
     }
 }
 
@@ -56,6 +75,19 @@ export async function middleware(request: NextRequest) {
     const isAuthRoute = authPaths.some(
         (route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
     );
+
+    // Check if the current path is an admin route
+    const isAdminRoute = adminPaths.some(
+        (route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/')
+    );
+
+    // RBAC: Admin routes require ADMIN role
+    if (isAdminRoute) {
+        const { authenticated, role } = await getTokenPayload(request);
+        if (!authenticated || role !== 'ADMIN') {
+            return NextResponse.redirect(new URL('/', request.url));
+        }
+    }
 
     if (isProtectedRoute) {
         const authenticated = await isAuthenticated(request);
