@@ -182,8 +182,8 @@ export default function CheckoutForm({ cartItems }: { cartItems: CartItem[] }) {
 
     const pageVariants = {
         initial: { opacity: 0, x: 30 },
-        animate: { opacity: 1, x: 0, transition: { duration: 0.35, ease: 'easeOut' } },
-        exit: { opacity: 0, x: -30, transition: { duration: 0.25, ease: 'easeIn' } },
+        animate: { opacity: 1, x: 0, transition: { duration: 0.35, ease: 'easeOut' as const } },
+        exit: { opacity: 0, x: -30, transition: { duration: 0.25, ease: 'easeIn' as const } },
     };
 
     // ── Render helpers ──
