@@ -5,6 +5,7 @@ import ImageGallery from '@/components/ImageGallery';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import { getProductDetails } from '@/lib/data';
 import { notFound } from 'next/navigation';
+import { getLocale } from 'next-intl/server';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -23,7 +24,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         notFound();
     }
 
-    const product = await getProductDetails(productId);
+    const product = await getProductDetails(productId, await getLocale());
 
     if (!product) {
         notFound();

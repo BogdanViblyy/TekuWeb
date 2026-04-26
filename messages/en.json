@@ -12,7 +12,8 @@
         "item": "item",
         "savedItems": "saved items",
         "savedItem": "saved item",
-        "recentlyViewed": "Recently Viewed"
+        "recentlyViewed": "Recently Viewed",
+        "continueShopping": "Continue Shopping"
     },
     "nav": {
         "women": "Women",
@@ -46,14 +47,20 @@
         "noResults": "No products found for",
         "tryDifferent": "Try a different search term.",
         "browseByCategory": "Browse by Category",
-        "allAudiences": "All"
+        "allAudiences": "All",
+        "noCategories": "No categories found for this audience."
     },
     "product": {
         "notFound": "Product Not Found",
         "addToCart": "Add to Cart",
         "adding": "Adding...",
         "selectColor": "Select color",
-        "selectSize": "Select size"
+        "selectSize": "Select size",
+        "color": "Color",
+        "size": "Size",
+        "description": "Description",
+        "material": "Material",
+        "brand": "Brand"
     },
     "cart": {
         "title": "Shopping Cart",
@@ -62,7 +69,8 @@
         "placeOrder": "Place Order",
         "placing": "Placing...",
         "remove": "Remove",
-        "qty": "Qty"
+        "qty": "Qty",
+        "continueShopping": "Continue Shopping"
     },
     "auth": {
         "loginTitle": "Log In",
@@ -90,9 +98,13 @@
         "orderDetails": "Order Details",
         "orderItems": "Items in this order",
         "languageAndRegion": "Language and region",
-        "english": "English (United kingdom)",
-        "russian": "Russian (Russia)",
-        "language": "Language"
+        "english": "English (United Kingdom)",
+        "french": "French (France)",
+        "language": "Language",
+        "mostRecentOrder": "Most Recent Order",
+        "orderNumber": "Order #",
+        "accountSettings": "Account Settings",
+        "accountDescription": "Manage your account details and preferences here."
     },
     "wishlist": {
         "title": "Wishlist",
@@ -208,12 +220,42 @@
         "invalidCvv": "Please enter a valid CVV.",
         "items": "items"
     },
+    "products": {
+        "allAudience": "All {audience}",
+        "showingResults": "Showing results...",
+        "noProducts": "No products found",
+        "noMatchingProducts": "No products found matching your criteria.",
+        "invalidUrl": "Invalid URL",
+        "selectAudience": "Please select an audience like \"Men\", \"Women\", or \"Kids\".",
+        "goToSearch": "Go to Search"
+    },
+    "filters": {
+        "title": "Filters",
+        "onSale": "On Sale",
+        "inStockOnly": "In Stock Only",
+        "brands": "Brands",
+        "sizes": "Sizes",
+        "colors": "Colors",
+        "materials": "Materials",
+        "price": "Price"
+    },
+    "sort": {
+        "sortBy": "Sort By",
+        "recommended": "Recommended",
+        "newestArrivals": "Newest Arrivals",
+        "priceLowHigh": "Price: Low to High",
+        "priceHighLow": "Price: High to Low",
+        "nameAZ": "Name: A-Z",
+        "nameZA": "Name: Z-A"
+    },
     "errors": {
         "notFoundTitle": "Page Not Found",
         "notFoundText": "Sorry, the page you're looking for doesn't exist.",
         "goHome": "Go Home",
         "errorTitle": "Something went wrong!",
         "errorText": "An unexpected error occurred.",
-        "tryAgain": "Try again"
+        "tryAgain": "Try again",
+        "invalidOrderId": "Invalid order ID.",
+        "orderNotFound": "Order not found or you do not have permission to view it."
     }
 }

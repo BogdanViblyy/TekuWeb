@@ -6,13 +6,13 @@ import { redirect } from "next/navigation";
 import { Link } from '@/i18n/navigation';
 import { getTranslations } from 'next-intl/server';
 
-function OrderCard({ order, tProfile }: { order: UserOrderSummary, tProfile: any }) {
+function OrderCard({ order, tProfile, tStatus }: { order: UserOrderSummary, tProfile: any, tStatus: any }) {
     return (
         <div className="border rounded-lg p-4 flex justify-between items-center">
             <div>
                 <p className="font-bold">{order.orderCode}</p>
                 <p className="text-sm text-gray-500">{new Date(order.orderTime).toLocaleDateString()}</p>
-                <p className="text-sm">{tProfile('orderStatus')}: <span className="font-semibold">{order.orderStatus}</span></p>
+                <p className="text-sm">{tProfile('orderStatus')}: <span className="font-semibold">{tStatus(order.orderStatus.toLowerCase() as any)}</span></p>
             </div>
             <div className="text-right">
                 <p className="font-bold">${order.totalAmount.toFixed(2)}</p>
@@ -32,13 +32,14 @@ export default async function OrderHistoryPage() {
 
     const orders = await getUserOrders(user.id);
     const tProfile = await getTranslations('profile');
+    const tStatus = await getTranslations('orderStatus');
 
     return (
         <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-4xl font-bold mb-6">{tProfile('yourOrders')}</h1>
             {orders.length > 0 ? (
                 <div className="space-y-4">
-                    {orders.map(order => <OrderCard key={order.orderId} order={order} tProfile={tProfile} />)}
+                    {orders.map(order => <OrderCard key={order.orderId} order={order} tProfile={tProfile} tStatus={tStatus} />)}
                 </div>
             ) : (
                 <p>{tProfile('noOrders')}</p>

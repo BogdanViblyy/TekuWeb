@@ -3,7 +3,7 @@ import { getProductsByColor } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import { Link } from '@/i18n/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -20,7 +20,8 @@ export default async function ColorDetailPage({ params }: { params: Promise<{ id
     const colorId = parseInt(id, 10);
     if (isNaN(colorId)) notFound();
 
-    const { color, products } = await getProductsByColor(colorId);
+    const locale = await getLocale();
+    const { color, products } = await getProductsByColor(colorId, locale);
     if (!color) notFound();
 
     const tCommon = await getTranslations('common');

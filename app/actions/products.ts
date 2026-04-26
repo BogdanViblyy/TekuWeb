@@ -20,17 +20,18 @@ export async function loadMoreProducts(
         inStock?: boolean;
     },
     page: number,
-    sort?: string
+    sort?: string,
+    locale: string = 'en'
 ): Promise<{ products: Product[]; hasMore: boolean }> {
-    const result = await getProducts(audience, filters, page, sort);
+    const result = await getProducts(audience, filters, page, sort, locale);
     return {
         products: result.products,
         hasMore: result.hasMore
     };
 }
 
-export async function fetchRecentlyViewedProducts(ids: number[]): Promise<Product[]> {
+export async function fetchRecentlyViewedProducts(ids: number[], locale: string = 'en'): Promise<Product[]> {
     const { getProductsByIds } = await import('@/lib/data');
-    return getProductsByIds(ids);
+    return getProductsByIds(ids, locale);
 }
 

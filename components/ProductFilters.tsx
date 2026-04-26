@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useTransition } from 'react';
 import { FilterOptions, ColorFilter } from '@/types';
 import PriceSlider from './PriceSlider';
+import { useTranslations } from 'next-intl';
 
 function ArrayFilter({ title, options, filterKey }: { title: string, options: string[], filterKey: string }) {
   const router = useRouter();
@@ -145,21 +146,23 @@ function ToggleFilter({ title, filterKey }: { title: string, filterKey: string }
 }
 
 export default function ProductFilters({ filters }: { filters: FilterOptions }) {
+  const tFilters = useTranslations('filters');
+
   return (
     <div>
-      <h2 className="text-xl font-bold mb-4">Filters</h2>
+      <h2 className="text-xl font-bold mb-4">{tFilters('title')}</h2>
       
       {(filters.minPrice !== undefined && filters.maxPrice !== undefined && filters.maxPrice >= filters.minPrice) && (
         <PriceSlider min={filters.minPrice} max={filters.maxPrice} />
       )}
 
-      <ToggleFilter title="On Sale" filterKey="onSale" />
-      <ToggleFilter title="In Stock Only" filterKey="inStock" />
+      <ToggleFilter title={tFilters('onSale')} filterKey="onSale" />
+      <ToggleFilter title={tFilters('inStockOnly')} filterKey="inStock" />
 
-      {filters.brands.length > 0 && <ArrayFilter title="Brands" options={filters.brands} filterKey="brand" />}
-      {filters.sizes.length > 0 && <ArrayFilter title="Sizes" options={filters.sizes} filterKey="size" />}
-      {filters.colors.length > 0 && <ColorFilterComponent title="Colors" options={filters.colors} filterKey="color" />}
-      {filters.materials.length > 0 && <ArrayFilter title="Materials" options={filters.materials} filterKey="material" />}
+      {filters.brands.length > 0 && <ArrayFilter title={tFilters('brands')} options={filters.brands} filterKey="brand" />}
+      {filters.sizes.length > 0 && <ArrayFilter title={tFilters('sizes')} options={filters.sizes} filterKey="size" />}
+      {filters.colors.length > 0 && <ColorFilterComponent title={tFilters('colors')} options={filters.colors} filterKey="color" />}
+      {filters.materials.length > 0 && <ArrayFilter title={tFilters('materials')} options={filters.materials} filterKey="material" />}
     </div>
   );
 }

@@ -3,7 +3,7 @@ import { getProductsByBrand } from '@/lib/data';
 import { notFound } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import { Link } from '@/i18n/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -20,7 +20,8 @@ export default async function BrandDetailPage({ params }: { params: Promise<{ id
     const brandId = parseInt(id, 10);
     if (isNaN(brandId)) notFound();
 
-    const { brand, products } = await getProductsByBrand(brandId);
+    const locale = await getLocale();
+    const { brand, products } = await getProductsByBrand(brandId, locale);
     if (!brand) notFound();
 
     const tCommon = await getTranslations('common');

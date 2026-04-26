@@ -7,6 +7,7 @@ import { Product } from '@/types';
 import { loadMoreProducts } from '@/app/actions';
 import ProductCard from './ProductCard';
 import { Spinner } from './Spinner';
+import { useLocale } from 'next-intl';
 
 interface ProductListProps {
   initialProducts: Product[];
@@ -27,6 +28,7 @@ interface ProductListProps {
 }
 
 export default function ProductList({ initialProducts, initialHasMore, audience, filters, sort }: ProductListProps) {
+  const locale = useLocale();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [page, setPage] = useState(2);
@@ -40,7 +42,7 @@ export default function ProductList({ initialProducts, initialHasMore, audience,
     // Запускаем подгрузку, только если нет уже идущего запроса
     if (inView && hasMore && !isPending) {
       startTransition(() => {
-        loadMoreProducts(audience, filters, page, sort).then(res => {
+        loadMoreProducts(audience, filters, page, sort, locale).then(res => {
           if (res.products.length > 0) {
             setProducts(prev => [...prev, ...res.products]);
             setPage(prev => prev + 1);

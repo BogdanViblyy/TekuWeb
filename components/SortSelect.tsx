@@ -9,8 +9,8 @@ export default function SortSelect() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [isPending, startTransition] = useTransition();
+    const tSort = useTranslations('sort');
     
-    // We could use next-intl here if we had translations, sticking to simple labels for now
     const currentSort = searchParams.get('sort') || '';
     
     const handleSortChange = (value: string) => {
@@ -27,19 +27,19 @@ export default function SortSelect() {
 
     return (
         <div className="flex items-center space-x-2">
-            <label className="text-sm text-gray-500 font-medium">Sort By:</label>
+            <label className="text-sm text-gray-500 font-medium">{tSort('sortBy')}:</label>
             <select
                 value={currentSort}
                 onChange={(e) => handleSortChange(e.target.value)}
                 disabled={isPending}
                 className="p-2 border rounded-md text-sm cursor-pointer outline-none focus:ring-1 focus:ring-black"
             >
-                <option value="">Recommended</option>
-                <option value="newest">Newest Arrivals</option>
-                <option value="price_asc">Price: Low to High</option>
-                <option value="price_desc">Price: High to Low</option>
-                <option value="name_asc">Name: A-Z</option>
-                <option value="name_desc">Name: Z-A</option>
+                <option value="">{tSort('recommended')}</option>
+                <option value="newest">{tSort('newestArrivals')}</option>
+                <option value="price_asc">{tSort('priceLowHigh')}</option>
+                <option value="price_desc">{tSort('priceHighLow')}</option>
+                <option value="name_asc">{tSort('nameAZ')}</option>
+                <option value="name_desc">{tSort('nameZA')}</option>
             </select>
         </div>
     );

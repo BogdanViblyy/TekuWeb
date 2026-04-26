@@ -1,4 +1,4 @@
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import { getWishlist } from '@/app/actions';
 import { getProductsByIds } from '@/lib/data';
 import ProductCard from '@/components/ProductCard';
@@ -26,7 +26,8 @@ export default async function WishlistPage() {
         );
     }
 
-    const items = await getProductsByIds(wishlistIds);
+    const locale = await getLocale();
+    const items = await getProductsByIds(wishlistIds, locale);
 
     return (
         <div className="container mx-auto px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">

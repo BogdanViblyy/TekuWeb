@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Product } from '@/types';
 import ProductCard from './ProductCard';
 import { fetchRecentlyViewedProducts } from '@/app/actions';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface RecentlyViewedProps {
   currentProductId?: number;
@@ -14,6 +14,7 @@ export default function RecentlyViewed({ currentProductId }: RecentlyViewedProps
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const t = useTranslations('common');
+  const locale = useLocale();
 
   useEffect(() => {
     try {
@@ -34,7 +35,7 @@ export default function RecentlyViewed({ currentProductId }: RecentlyViewedProps
             return;
         }
 
-        fetchRecentlyViewedProducts(idsToFetch).then(fetchedProducts => {
+        fetchRecentlyViewedProducts(idsToFetch, locale).then(fetchedProducts => {
             setProducts(fetchedProducts);
             setLoading(false);
         }).catch(err => {

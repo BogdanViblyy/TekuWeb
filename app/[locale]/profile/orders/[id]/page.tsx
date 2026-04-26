@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import Image from 'next/image';
 import { getDefaultImageUrl } from "@/lib/utils";
 import OrderStatusTimeline from "@/components/OrderStatusTimeline";
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const user = await getSession();
@@ -15,22 +15,28 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
     const { id } = await params;
     const orderId = parseInt(id, 10);
-    if (isNaN(orderId)) {
-        return <div className="text-center py-20 pt-[calc(var(--header-total-height)+3rem)]">Invalid order ID.</div>;
-    }
 
-    const order = await getOrderDetails(orderId, user.id);
     const tProfile = await getTranslations('profile');
     const tStatus = await getTranslations('orderStatus');
+    const tProduct = await getTranslations('product');
+    const tCart = await getTranslations('cart');
+    const tErrors = await getTranslations('errors');
+
+    if (isNaN(orderId)) {
+        return <div className="text-center py-20 pt-[calc(var(--header-total-height)+3rem)]">{tErrors('invalidOrderId')}</div>;
+    }
+
+    const locale = await getLocale();
+    const order = await getOrderDetails(orderId, user.id, locale);
 
     if (!order) {
-        return <div className="text-center py-20 pt-[calc(var(--header-total-height)+3rem)]">Order not found or you do not have permission to view it.</div>
+        return <div className="text-center py-20 pt-[calc(var(--header-total-height)+3rem)]">{tErrors('orderNotFound')}</div>
     }
 
     return (
         <div className="container mx-auto max-w-4xl px-4 py-8 pt-[calc(var(--header-total-height)+3rem)]">
             <h1 className="text-3xl font-bold">{tProfile('orderDetails')}</h1>
-            <p className="text-lg text-gray-600 mb-6">Order #{order.orderCode}</p>
+            <p className="text-lg text-gray-600 mb-6">{tProfile('orderNumber')}: {order.orderCode}</p>
 
             {/* Status Timeline */}
             <div className="bg-gray-50 p-6 rounded-lg mb-8">
@@ -72,8 +78,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                         </div>
                         <div className="flex-grow">
                             <h3 className="font-semibold">{item.productName}</h3>
-                            <p className="text-sm text-gray-500">Color: {item.colorName} | Size: {item.sizeName}</p>
-                            <p className="text-sm">Qty: {item.quantity}</p>
+                            <p className="text-sm text-gray-500">{tProduct('color')}: {item.colorName} | {tProduct('size')}: {item.sizeName}</p>
+                            <p className="text-sm">{tCart('qty')}: {item.quantity}</p>
                         </div>
                         <div className="text-right">
                             <p className="font-semibold">${(item.quantity * (item.priceAtPurchase - (item.discountOnUnit || 0))).toFixed(2)}</p>

@@ -1,6 +1,6 @@
 // app/search/page.tsx
 import { Link } from '@/i18n/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { getCategoriesByAudience, searchProducts } from '@/lib/data';
 import { Suspense } from 'react';
@@ -16,7 +16,8 @@ const audiences = ['WOMEN', 'MEN', 'KIDS'];
 
 // Компонент результатов поиска
 async function SearchResults({ query }: { query: string }) {
-    const results = await searchProducts(query);
+    const locale = await getLocale();
+    const results = await searchProducts(query, locale);
     const tSearch = await getTranslations('search');
     const tCommon = await getTranslations('common');
 
@@ -74,7 +75,7 @@ async function SearchContent({ selectedAudience }: { selectedAudience: string })
                     ))}
                 </ul>
             ) : (
-                <p className="text-gray-500 mt-8 text-center">No categories found for this audience.</p>
+                <p className="text-gray-500 mt-8 text-center">{tSearch('noCategories')}</p>
             )}
         </div>
     );

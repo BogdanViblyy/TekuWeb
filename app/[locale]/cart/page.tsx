@@ -13,6 +13,8 @@ export const dynamic = 'force-dynamic';
 export default async function CartPage() {
     const { items: cartItems } = await getCart();
     const tCart = await getTranslations('cart');
+    const tProduct = await getTranslations('product');
+    const tCheckout = await getTranslations('checkout');
 
     if (!cartItems || cartItems.length === 0) {
         return (
@@ -21,7 +23,7 @@ export default async function CartPage() {
                     <h1 className="text-4xl font-bold mb-4">{tCart('title')}</h1>
                     <p className="text-gray-600 mb-8">{tCart('empty')}</p>
                     <Link href="/search" className="bg-black text-white px-6 py-3 rounded-md hover:bg-gray-800 transition">
-                        Continue Shopping
+                        {tCart('continueShopping')}
                     </Link>
                 </div>
                 <RecentlyViewed />
@@ -54,7 +56,7 @@ export default async function CartPage() {
                             </div>
                             <div className="flex-grow">
                                 <h2 className="font-semibold">{item.productName}</h2>
-                                <p className="text-sm text-gray-500">Color: {item.colorName} | Size: {item.sizeName}</p>
+                                <p className="text-sm text-gray-500">{tProduct('color')}: {item.colorName} | {tProduct('size')}: {item.sizeName}</p>
                                 <p className="text-sm font-medium mt-1">${(item.priceAtPurchase - (item.discountOnUnit || 0)).toFixed(2)}</p>
                                 <CartActions item={item} />
                             </div>
@@ -63,14 +65,14 @@ export default async function CartPage() {
                 </div>
                 <div className="lg:col-span-1">
                     <div className="p-6 border rounded-lg bg-gray-50 sticky top-24">
-                        <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
+                        <h2 className="text-xl font-semibold mb-4">{tCheckout('orderSummary')}</h2>
                         <div className="flex justify-between mb-2">
-                            <span>Subtotal</span>
+                            <span>{tCheckout('subtotal')}</span>
                             <span>${totalPrice.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between mb-4">
-                            <span>Shipping</span>
-                            <span>FREE</span>
+                            <span>{tCheckout('shipping')}</span>
+                            <span>{tCheckout('shippingFree')}</span>
                         </div>
                         <div className="border-t pt-4 flex justify-between font-bold text-lg">
                             <span>{tCart('total')}</span>

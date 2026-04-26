@@ -6,17 +6,26 @@ import { unstable_cache as cache } from 'next/cache';
 
 import { formatImageUrl } from '@/lib/utils';
 
-// --- Функции для получения данных ---
+// --- Helper: locale-aware field resolution ---
+
+function localized<T extends Record<string, unknown>>(obj: T, field: string, locale: string): string | null {
+    if (locale !== 'en') {
+        const locField = `${field}_${locale}` as keyof T;
+        if (obj[locField]) return obj[locField] as string;
+    }
+    return (obj[field as keyof T] as string) || null;
+}
 
 const PRODUCTS_PER_PAGE = 12;
 
-export async function searchProducts(query: string): Promise<Product[]> {
+export async function searchProducts(query: string, locale: string = 'en'): Promise<Product[]> {
     if (!query || query.trim().length < 2) return [];
 
     const items = await prisma.shop_items.findMany({
         where: {
             OR: [
                 { item_name: { contains: query } },
+                { item_name_fr: { contains: query } },
                 { item_description: { contains: query } },
                 { brands: { brand_name: { contains: query } } },
                 { categories: { category_name: { contains: query } } },
@@ -32,9 +41,9 @@ export async function searchProducts(query: string): Promise<Product[]> {
 
     return items.map((item) => ({
         itemId: item.item_id,
-        name: item.item_name || 'No Name',
-        brandName: item.brands?.brand_name || null,
-        description: item.item_description,
+        name: localized(item, 'item_name', locale) || 'No Name',
+        brandName: item.brands ? localized(item.brands, 'brand_name', locale) : null,
+        description: localized(item, 'item_description', locale),
         price: (item.item_price as unknown as Decimal).toNumber(),
         discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
         imageURL: formatImageUrl(item.item_image),
@@ -44,7 +53,6 @@ export async function searchProducts(query: string): Promise<Product[]> {
 
 export async function getProducts(
     audience: string,
-    // FIX: Принимаем объект с фильтрами для чистоты
     filters: {
         categoryName?: string,
         size?: string[],
@@ -57,7 +65,8 @@ export async function getProducts(
         inStock?: boolean
     },
     page: number = 1,
-    sort?: string
+    sort?: string,
+    locale: string = 'en'
 ): Promise<{ products: Product[], hasMore: boolean, filteredMinPrice: number, filteredMaxPrice: number }> {
     if (!audience) return { products: [], hasMore: false, filteredMinPrice: 0, filteredMaxPrice: 0 };
 
@@ -195,9 +204,9 @@ export async function getProducts(
     return {
         products: products.map((item) => ({
             itemId: item.item_id,
-            name: item.item_name || 'No Name',
-            brandName: item.brands?.brand_name || null,
-            description: item.item_description,
+            name: localized(item, 'item_name', locale) || 'No Name',
+            brandName: item.brands ? localized(item.brands, 'brand_name', locale) : null,
+            description: localized(item, 'item_description', locale),
             price: (item.item_price as unknown as Decimal).toNumber(),
             discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
             imageURL: item.item_image ? `/images/${item.item_image}` : null,
@@ -209,7 +218,7 @@ export async function getProducts(
     };
 }
 
-export async function getProductDetails(id: number): Promise<ShopItemDetails | null> {
+export async function getProductDetails(id: number, locale: string = 'en'): Promise<ShopItemDetails | null> {
     const item = await prisma.shop_items.findUnique({
         where: { item_id: id },
         include: {
@@ -229,7 +238,7 @@ export async function getProductDetails(id: number): Promise<ShopItemDetails | n
 
     if (!item) return null;
 
-    const availableColors = [...new Set(item.products.map((p) => p.colors?.color_name).filter(Boolean))] as string[];
+    const availableColors = [...new Set(item.products.map((p) => p.colors ? (localized(p.colors, 'color_name', locale) || p.colors.color_name) : null).filter(Boolean))] as string[];
     const availableSizes = [...new Set(item.products.map((p) => p.sizes?.size_name).filter(Boolean))] as string[];
 
     // Build image gallery: use item_images table, fall back to primary item_image
@@ -239,9 +248,9 @@ export async function getProductDetails(id: number): Promise<ShopItemDetails | n
 
     return {
         itemId: item.item_id,
-        name: item.item_name || 'No Name',
-        brandName: item.brands?.brand_name || null,
-        description: item.item_description,
+        name: localized(item, 'item_name', locale) || 'No Name',
+        brandName: item.brands ? localized(item.brands, 'brand_name', locale) : null,
+        description: localized(item, 'item_description', locale),
         price: (item.item_price as unknown as Decimal).toNumber(),
         discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
         imageURL: primaryImage,
@@ -288,7 +297,7 @@ export async function getUserOrders(userId: number): Promise<UserOrderSummary[]>
 }
 
 
-export async function getOrderDetails(orderId: number, userId: number): Promise<OrderFullDetails | null> {
+export async function getOrderDetails(orderId: number, userId: number, locale: string = 'en'): Promise<OrderFullDetails | null> {
     const order = await prisma.orders.findFirst({
         where: { order_id: orderId, user_id: userId, NOT: { order_status: 'CART' } },
         include: {
@@ -315,11 +324,11 @@ export async function getOrderDetails(orderId: number, userId: number): Promise<
     const items: CartItem[] = order.order_products.map((op) => ({
         orderProductId: op.id,
         shopItemId: op.products.item_id,
-        productName: op.products.shop_items.item_name || '',
+        productName: localized(op.products.shop_items, 'item_name', locale) || '',
         quantity: op.quantity,
         priceAtPurchase: (op.price_at_purchase as unknown as Decimal).toNumber(),
         discountOnUnit: op.discount_on_unit ? (op.discount_on_unit as unknown as Decimal).toNumber() : null,
-        colorName: op.products.colors?.color_name || 'N/A',
+        colorName: op.products.colors ? (localized(op.products.colors, 'color_name', locale) || 'N/A') : 'N/A',
         sizeName: op.products.sizes?.size_name || 'N/A',
         imageURL: formatImageUrl(op.products.shop_items.item_image),
         productVariantId: op.products_id,
@@ -434,7 +443,7 @@ export const getAvailableFilters = cache(
 
 // --- Browse-By Data Functions ---
 
-export async function getAllBrands(): Promise<{ brandId: number; brandName: string; description: string | null; productCount: number }[]> {
+export async function getAllBrands(locale: string = 'en'): Promise<{ brandId: number; brandName: string; description: string | null; productCount: number }[]> {
     const brands = await prisma.brands.findMany({
         include: { _count: { select: { shop_items: true } } },
         orderBy: { brand_name: 'asc' },
@@ -443,13 +452,13 @@ export async function getAllBrands(): Promise<{ brandId: number; brandName: stri
         .filter((b) => b.brand_name && b._count.shop_items > 0)
         .map((b) => ({
             brandId: b.brand_id,
-            brandName: b.brand_name!,
-            description: b.brand_description,
+            brandName: localized(b, 'brand_name', locale) || b.brand_name!,
+            description: localized(b, 'brand_description', locale),
             productCount: b._count.shop_items,
         }));
 }
 
-export async function getProductsByBrand(brandId: number): Promise<{ brand: { brandId: number; brandName: string; description: string | null } | null; products: Product[] }> {
+export async function getProductsByBrand(brandId: number, locale: string = 'en'): Promise<{ brand: { brandId: number; brandName: string; description: string | null } | null; products: Product[] }> {
     const brand = await prisma.brands.findUnique({ where: { brand_id: brandId } });
     if (!brand) return { brand: null, products: [] };
 
@@ -460,12 +469,12 @@ export async function getProductsByBrand(brandId: number): Promise<{ brand: { br
     });
 
     return {
-        brand: { brandId: brand.brand_id, brandName: brand.brand_name || '', description: brand.brand_description },
+        brand: { brandId: brand.brand_id, brandName: localized(brand, 'brand_name', locale) || '', description: localized(brand, 'brand_description', locale) },
         products: items.map((item) => ({
             itemId: item.item_id,
-            name: item.item_name || 'No Name',
-            brandName: item.brands?.brand_name || null,
-            description: item.item_description,
+            name: localized(item, 'item_name', locale) || 'No Name',
+            brandName: item.brands ? localized(item.brands, 'brand_name', locale) : null,
+            description: localized(item, 'item_description', locale),
             price: (item.item_price as unknown as Decimal).toNumber(),
             discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
             imageURL: formatImageUrl(item.item_image),
@@ -474,7 +483,7 @@ export async function getProductsByBrand(brandId: number): Promise<{ brand: { br
     };
 }
 
-export async function getAllMaterials(): Promise<{ materialId: number; materialName: string; productCount: number }[]> {
+export async function getAllMaterials(locale: string = 'en'): Promise<{ materialId: number; materialName: string; description: string | null; productCount: number }[]> {
     const materials = await prisma.materials.findMany({
         include: { _count: { select: { shop_items: true } } },
         orderBy: { material_name: 'asc' },
@@ -483,12 +492,13 @@ export async function getAllMaterials(): Promise<{ materialId: number; materialN
         .filter((m) => m.material_name && m._count.shop_items > 0)
         .map((m) => ({
             materialId: m.material_id,
-            materialName: m.material_name!,
+            materialName: localized(m, 'material_name', locale) || m.material_name!,
+            description: localized(m, 'material_description', locale),
             productCount: m._count.shop_items,
         }));
 }
 
-export async function getProductsByMaterial(materialId: number): Promise<{ material: { materialId: number; materialName: string } | null; products: Product[] }> {
+export async function getProductsByMaterial(materialId: number, locale: string = 'en'): Promise<{ material: { materialId: number; materialName: string; description: string | null } | null; products: Product[] }> {
     const material = await prisma.materials.findUnique({ where: { material_id: materialId } });
     if (!material) return { material: null, products: [] };
 
@@ -499,12 +509,12 @@ export async function getProductsByMaterial(materialId: number): Promise<{ mater
     });
 
     return {
-        material: { materialId: material.material_id, materialName: material.material_name || '' },
+        material: { materialId: material.material_id, materialName: localized(material, 'material_name', locale) || '', description: localized(material, 'material_description', locale) },
         products: items.map((item) => ({
             itemId: item.item_id,
-            name: item.item_name || 'No Name',
-            brandName: item.brands?.brand_name || null,
-            description: item.item_description,
+            name: localized(item, 'item_name', locale) || 'No Name',
+            brandName: item.brands ? localized(item.brands, 'brand_name', locale) : null,
+            description: localized(item, 'item_description', locale),
             price: (item.item_price as unknown as Decimal).toNumber(),
             discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
             imageURL: formatImageUrl(item.item_image),
@@ -513,7 +523,7 @@ export async function getProductsByMaterial(materialId: number): Promise<{ mater
     };
 }
 
-export async function getAllColors(): Promise<{ colorId: number; colorName: string; colorRgb: string | null; productCount: number }[]> {
+export async function getAllColors(locale: string = 'en'): Promise<{ colorId: number; colorName: string; colorRgb: string | null; description: string | null; productCount: number }[]> {
     const colors = await prisma.colors.findMany({
         include: { _count: { select: { products: true } } },
         orderBy: { color_name: 'asc' },
@@ -522,13 +532,14 @@ export async function getAllColors(): Promise<{ colorId: number; colorName: stri
         .filter((c) => c.color_name && c._count.products > 0)
         .map((c) => ({
             colorId: c.color_id,
-            colorName: c.color_name!,
+            colorName: localized(c, 'color_name', locale) || c.color_name!,
             colorRgb: c.color_rgb,
+            description: localized(c, 'color_description', locale),
             productCount: c._count.products,
         }));
 }
 
-export async function getProductsByColor(colorId: number): Promise<{ color: { colorId: number; colorName: string; colorRgb: string | null } | null; products: Product[] }> {
+export async function getProductsByColor(colorId: number, locale: string = 'en'): Promise<{ color: { colorId: number; colorName: string; colorRgb: string | null; description: string | null } | null; products: Product[] }> {
     const color = await prisma.colors.findUnique({ where: { color_id: colorId } });
     if (!color) return { color: null, products: [] };
 
@@ -546,12 +557,12 @@ export async function getProductsByColor(colorId: number): Promise<{ color: { co
     });
 
     return {
-        color: { colorId: color.color_id, colorName: color.color_name || '', colorRgb: color.color_rgb },
+        color: { colorId: color.color_id, colorName: localized(color, 'color_name', locale) || '', colorRgb: color.color_rgb, description: localized(color, 'color_description', locale) },
         products: items.map((item) => ({
             itemId: item.item_id,
-            name: item.item_name || 'No Name',
-            brandName: item.brands?.brand_name || null,
-            description: item.item_description,
+            name: localized(item, 'item_name', locale) || 'No Name',
+            brandName: item.brands ? localized(item.brands, 'brand_name', locale) : null,
+            description: localized(item, 'item_description', locale),
             price: (item.item_price as unknown as Decimal).toNumber(),
             discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
             imageURL: formatImageUrl(item.item_image),
@@ -560,7 +571,7 @@ export async function getProductsByColor(colorId: number): Promise<{ color: { co
     };
 }
 
-export async function getProductsByIds(ids: number[]): Promise<Product[]> {
+export async function getProductsByIds(ids: number[], locale: string = 'en'): Promise<Product[]> {
     if (!ids || ids.length === 0) return [];
 
     const items = await prisma.shop_items.findMany({
@@ -573,9 +584,9 @@ export async function getProductsByIds(ids: number[]): Promise<Product[]> {
     items.forEach(item => {
         itemMap.set(item.item_id, {
             itemId: item.item_id,
-            name: item.item_name || 'No Name',
-            brandName: item.brands?.brand_name || null,
-            description: item.item_description,
+            name: localized(item, 'item_name', locale) || 'No Name',
+            brandName: item.brands ? localized(item.brands, 'brand_name', locale) : null,
+            description: localized(item, 'item_description', locale),
             price: (item.item_price as unknown as Decimal).toNumber(),
             discount: item.item_discount ? (item.item_discount as unknown as Decimal).toNumber() : null,
             imageURL: formatImageUrl(item.item_image),

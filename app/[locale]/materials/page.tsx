@@ -1,5 +1,5 @@
 import { Link } from '@/i18n/navigation';
-import { getTranslations } from 'next-intl/server';
+import { getTranslations, getLocale } from 'next-intl/server';
 import type { Metadata } from 'next';
 import { getAllMaterials } from '@/lib/data';
 
@@ -9,7 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default async function MaterialsPage() {
-    const materials = await getAllMaterials();
+    const locale = await getLocale();
+    const materials = await getAllMaterials(locale);
     const tBrowse = await getTranslations('browse');
     const tCommon = await getTranslations('common');
 

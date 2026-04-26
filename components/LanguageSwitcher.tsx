@@ -10,12 +10,12 @@ export default function LanguageSwitcher() {
     const t = useTranslations('profile');
 
     const toggleLanguage = () => {
-        const nextLocale = locale === 'en' ? 'ru' : 'en';
+        const nextLocale = locale === 'en' ? 'fr' : 'en';
         router.replace(pathname, { locale: nextLocale });
     };
 
-    const currentFlag = locale === 'en' ? '/images/United_Kingdom.svg' : '/images/Russia.svg';
-    const currentLangText = locale === 'en' ? t('english') : t('russian');
+    const currentFlag = locale === 'en' ? '/images/United_Kingdom.svg' : '/images/France.svg';
+    const currentLangText = locale === 'en' ? t('english') : t('french');
 
     return (
         <div className="mb-6">
